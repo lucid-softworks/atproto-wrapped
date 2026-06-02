@@ -1,5 +1,5 @@
-import { Fragment, type ReactNode } from "react";
-import type { RepoStats } from "../lib/atproto";
+import { Fragment, useMemo, useState, type ReactNode } from "react";
+import type { RepoRecord, RepoStats } from "../lib/atproto";
 import { describeCollection } from "../lib/labels";
 import { shareWrappedUrl } from "../lib/shareUrl";
 import {
@@ -159,7 +159,49 @@ function countForPrefixes(buckets: Bucket[], prefixes: string[]): number {
 }
 
 export function Wrapped({ stats }: { stats: RepoStats }) {
-  const allBuckets = Array.from(stats.byCollection.entries())
+  const availableYears = useMemo(() => {
+    const years = new Set<number>();
+    for (const records of stats.byCollection.values()) {
+      for (const r of records) {
+        if (r.createdAt) years.add(r.createdAt.getFullYear());
+      }
+    }
+    return Array.from(years).sort((a, b) => b - a);
+  }, [stats]);
+
+  const [year, setYear] = useState<number | "all">("all");
+
+  const filteredStats: RepoStats = useMemo(() => {
+    if (year === "all") return stats;
+    const filtered = new Map<string, RepoRecord[]>();
+    let totalRecords = 0;
+    let firstRecordAt: Date | null = null;
+    let latestRecordAt: Date | null = null;
+    for (const [nsid, recs] of stats.byCollection) {
+      const inYear = recs.filter(
+        (r) => r.createdAt && r.createdAt.getFullYear() === year,
+      );
+      if (inYear.length === 0) continue;
+      filtered.set(nsid, inYear);
+      totalRecords += inYear.length;
+      for (const r of inYear) {
+        if (!r.createdAt) continue;
+        if (!firstRecordAt || r.createdAt < firstRecordAt)
+          firstRecordAt = r.createdAt;
+        if (!latestRecordAt || r.createdAt > latestRecordAt)
+          latestRecordAt = r.createdAt;
+      }
+    }
+    return {
+      ...stats,
+      byCollection: filtered,
+      totalRecords,
+      firstRecordAt,
+      latestRecordAt,
+    };
+  }, [stats, year]);
+
+  const allBuckets = Array.from(filteredStats.byCollection.entries())
     .map(([nsid, records], idx) => {
       const descriptor = describeCollection(nsid, idx);
       return { nsid, records, count: records.length, descriptor };
@@ -188,74 +230,74 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
   );
 
   // Build feature highlights
-  const bluesky = getBlueskyHighlights(stats.byCollection);
-  const music = getMusicHighlights(stats.byCollection);
-  const popfeed = getPopfeedHighlights(stats.byCollection);
-  const grain = getGrainHighlights(stats);
-  const tangled = getTangledHighlights(stats.byCollection);
-  const streamplace = getStreamplaceHighlights(stats.byCollection);
-  const rpg = getRpgHighlights(stats);
-  const anisota = getAnisotaHighlights(stats.byCollection);
-  const games = getGamesHighlights(stats.byCollection);
-  const flashes = getFlashesHighlights(stats);
-  const reading = getReadingHighlights(stats.byCollection);
-  const flushing = getFlushingHighlights(stats.byCollection);
-  const frontpage = getFrontpageHighlights(stats.byCollection);
-  const drydown = getDrydownHighlights(stats);
-  const status = getStatusHighlights(stats.byCollection);
-  const atsumeat = getAtsumeatHighlights(stats.byCollection);
-  const atbuddy = getAtBuddyHighlights(stats.byCollection);
-  const bluePlace = getBluePlaceHighlights(stats.byCollection);
-  const psky = getPskyHighlights(stats.byCollection);
-  const youandme = getYouAndMeHighlights(stats.byCollection);
-  const smokesignal = getSmokeSignalHighlights(stats.byCollection);
-  const sifa = getSifaHighlights(stats.byCollection);
-  const spores = getSporesHighlights(stats.byCollection);
-  const highFive = getHighFiveHighlights(stats.byCollection);
-  const atvouch = getAtVouchHighlights(stats.byCollection);
-  const atpoke = getAtPokeHighlights(stats.byCollection);
-  const sparks = getSparksHighlights(stats.byCollection);
-  const blips = getBlipsHighlights(stats.byCollection);
-  const asq = getAsqHighlights(stats.byCollection);
-  const intros = getIntrosHighlights(stats.byCollection);
-  const stickers = getStickersHighlights(stats);
-  const badges = getBadgesHighlights(stats);
-  const wishlist = getWishlistHighlights(stats);
-  const madebydannyCdn = getMadebydannyCdnHighlights(stats);
-  const flobitImages = getFlobitImagesHighlights(stats);
-  const sonasky = getSonaskyHighlights(stats);
-  const simocracy = getSimocracyHighlights(stats);
-  const attodo = getAtToDoHighlights(stats.byCollection);
-  const skyboard = getSkyboardHighlights(stats.byCollection);
-  const cosmik = getCosmikHighlights(stats.byCollection);
-  const atguilds = getAtGuildsHighlights(stats.byCollection);
-  const linkring = getLinkringHighlights(stats.byCollection);
-  const atcircle = getAtCircleHighlights(stats.byCollection);
-  const rankthat = getRankthatHighlights(stats.byCollection);
-  const sidetrail = getSidetrailHighlights(stats.byCollection);
-  const skytalk = getSkytalkHighlights(stats.byCollection);
-  const tokimekiPolls = getTokimekiPollsHighlights(stats.byCollection);
-  const standardDocs = getStandardDocsHighlights(stats.byCollection);
-  const wisp = getWispHighlights(stats.byCollection);
-  const vibeMeal = getVibeMealHighlights(stats.byCollection);
-  const atstore = getAtStoreHighlights(stats.byCollection);
-  const brews = getBrewsHighlights(stats.byCollection);
-  const calendar = getCalendarHighlights(stats.byCollection);
-  const npmx = getNpmxHighlights(stats.byCollection);
-  const marque = getMarqueHighlights(stats.byCollection);
-  const atlas = getAtlasHighlights(stats.byCollection);
-  const pollen = getPollenHighlights(stats.byCollection);
-  const atmos = getAtmosHighlights(stats.byCollection);
-  const aiConsent = getAiConsentHighlights(stats.byCollection);
-  const protoimsg = getProtoimsgHighlights(stats.byCollection);
-  const keytrace = getKeytraceHighlights(stats.byCollection);
-  const endorse = getEndorseHighlights(stats.byCollection);
-  const funding = getFundingHighlights(stats.byCollection);
-  const blacksky = getBlackskyHighlights(stats.byCollection);
-  const fledglings = getFledglingsHighlights(stats.byCollection);
-  const atroom = getAtRoomHighlights(stats);
-  const blento = getBlentoHighlights(stats.byCollection);
-  const slides = getSlidesHighlights(stats.byCollection);
+  const bluesky = getBlueskyHighlights(filteredStats.byCollection);
+  const music = getMusicHighlights(filteredStats.byCollection);
+  const popfeed = getPopfeedHighlights(filteredStats.byCollection);
+  const grain = getGrainHighlights(filteredStats);
+  const tangled = getTangledHighlights(filteredStats.byCollection);
+  const streamplace = getStreamplaceHighlights(filteredStats.byCollection);
+  const rpg = getRpgHighlights(filteredStats);
+  const anisota = getAnisotaHighlights(filteredStats.byCollection);
+  const games = getGamesHighlights(filteredStats.byCollection);
+  const flashes = getFlashesHighlights(filteredStats);
+  const reading = getReadingHighlights(filteredStats.byCollection);
+  const flushing = getFlushingHighlights(filteredStats.byCollection);
+  const frontpage = getFrontpageHighlights(filteredStats.byCollection);
+  const drydown = getDrydownHighlights(filteredStats);
+  const status = getStatusHighlights(filteredStats.byCollection);
+  const atsumeat = getAtsumeatHighlights(filteredStats.byCollection);
+  const atbuddy = getAtBuddyHighlights(filteredStats.byCollection);
+  const bluePlace = getBluePlaceHighlights(filteredStats.byCollection);
+  const psky = getPskyHighlights(filteredStats.byCollection);
+  const youandme = getYouAndMeHighlights(filteredStats.byCollection);
+  const smokesignal = getSmokeSignalHighlights(filteredStats.byCollection);
+  const sifa = getSifaHighlights(filteredStats.byCollection);
+  const spores = getSporesHighlights(filteredStats.byCollection);
+  const highFive = getHighFiveHighlights(filteredStats.byCollection);
+  const atvouch = getAtVouchHighlights(filteredStats.byCollection);
+  const atpoke = getAtPokeHighlights(filteredStats.byCollection);
+  const sparks = getSparksHighlights(filteredStats.byCollection);
+  const blips = getBlipsHighlights(filteredStats.byCollection);
+  const asq = getAsqHighlights(filteredStats.byCollection);
+  const intros = getIntrosHighlights(filteredStats.byCollection);
+  const stickers = getStickersHighlights(filteredStats);
+  const badges = getBadgesHighlights(filteredStats);
+  const wishlist = getWishlistHighlights(filteredStats);
+  const madebydannyCdn = getMadebydannyCdnHighlights(filteredStats);
+  const flobitImages = getFlobitImagesHighlights(filteredStats);
+  const sonasky = getSonaskyHighlights(filteredStats);
+  const simocracy = getSimocracyHighlights(filteredStats);
+  const attodo = getAtToDoHighlights(filteredStats.byCollection);
+  const skyboard = getSkyboardHighlights(filteredStats.byCollection);
+  const cosmik = getCosmikHighlights(filteredStats.byCollection);
+  const atguilds = getAtGuildsHighlights(filteredStats.byCollection);
+  const linkring = getLinkringHighlights(filteredStats.byCollection);
+  const atcircle = getAtCircleHighlights(filteredStats.byCollection);
+  const rankthat = getRankthatHighlights(filteredStats.byCollection);
+  const sidetrail = getSidetrailHighlights(filteredStats.byCollection);
+  const skytalk = getSkytalkHighlights(filteredStats.byCollection);
+  const tokimekiPolls = getTokimekiPollsHighlights(filteredStats.byCollection);
+  const standardDocs = getStandardDocsHighlights(filteredStats.byCollection);
+  const wisp = getWispHighlights(filteredStats.byCollection);
+  const vibeMeal = getVibeMealHighlights(filteredStats.byCollection);
+  const atstore = getAtStoreHighlights(filteredStats.byCollection);
+  const brews = getBrewsHighlights(filteredStats.byCollection);
+  const calendar = getCalendarHighlights(filteredStats.byCollection);
+  const npmx = getNpmxHighlights(filteredStats.byCollection);
+  const marque = getMarqueHighlights(filteredStats.byCollection);
+  const atlas = getAtlasHighlights(filteredStats.byCollection);
+  const pollen = getPollenHighlights(filteredStats.byCollection);
+  const atmos = getAtmosHighlights(filteredStats.byCollection);
+  const aiConsent = getAiConsentHighlights(filteredStats.byCollection);
+  const protoimsg = getProtoimsgHighlights(filteredStats.byCollection);
+  const keytrace = getKeytraceHighlights(filteredStats.byCollection);
+  const endorse = getEndorseHighlights(filteredStats.byCollection);
+  const funding = getFundingHighlights(filteredStats.byCollection);
+  const blacksky = getBlackskyHighlights(filteredStats.byCollection);
+  const fledglings = getFledglingsHighlights(filteredStats.byCollection);
+  const atroom = getAtRoomHighlights(filteredStats);
+  const blento = getBlentoHighlights(filteredStats.byCollection);
+  const slides = getSlidesHighlights(filteredStats.byCollection);
 
   // Build the spotlight list — each entry is a featured section that only
   // appears when its highlight is non-null. We then sort by how many records
@@ -409,8 +451,18 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
 
   return (
     <div className="min-h-svh bg-cream text-ink">
-      <StickyNav handle={stats.handle} onShare={onShare} />
-      <IntroSlide stats={stats} topServices={topServices} onShare={onShare} />
+      <StickyNav
+        handle={stats.handle}
+        onShare={onShare}
+        years={availableYears}
+        year={year}
+        onYearChange={setYear}
+      />
+      <IntroSlide
+        stats={filteredStats}
+        topServices={topServices}
+        onShare={onShare}
+      />
       {ordered.map((f) => (
         <Fragment key={f.key}>{f.render(undefined)}</Fragment>
       ))}

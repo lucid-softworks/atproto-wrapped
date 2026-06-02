@@ -5,14 +5,20 @@ import { ShareButton } from "./ShareButton";
 export function StickyNav({
   handle,
   onShare,
+  years,
+  year,
+  onYearChange,
 }: {
   handle: string;
   onShare: () => Promise<"shared" | "copied" | "failed">;
+  years: number[];
+  year: number | "all";
+  onYearChange: (y: number | "all") => void;
 }) {
   return (
     <div className="sticky top-0 z-20 border-b-2 border-ink bg-cream/95 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3 sm:px-10">
-        <div className="flex items-center gap-2">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-6 py-3 sm:px-10">
+        <div className="flex min-w-0 items-center gap-2">
           <Link
             to="/"
             className="flex items-center gap-2 rounded-full px-1 -mx-1 hover:bg-ink/5"
@@ -22,11 +28,37 @@ export function StickyNav({
               ATPROTO·WRAPPED
             </span>
           </Link>
-          <span className="ml-3 hidden font-mono text-sm text-ink/60 sm:inline">
+          <span className="ml-3 hidden truncate font-mono text-sm text-ink/60 sm:inline">
             / @{toDisplayHandle(handle)}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
+          {years.length > 0 && (
+            <label className="relative flex items-center">
+              <span className="sr-only">Filter by year</span>
+              <select
+                value={year === "all" ? "all" : String(year)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  onYearChange(v === "all" ? "all" : Number(v));
+                }}
+                className="appearance-none rounded-full border-2 border-ink bg-cream px-3 py-1.5 pr-8 font-mono text-xs tracking-widest uppercase shadow-[3px_3px_0_0_var(--color-ink)] transition hover:bg-wrap-yellow focus:outline-none"
+              >
+                <option value="all">All time</option>
+                {years.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+              <span
+                aria-hidden
+                className="pointer-events-none absolute right-3 font-mono text-[10px]"
+              >
+                ▾
+              </span>
+            </label>
+          )}
           <ShareButton onShare={onShare} variant="small" />
           <Link
             to="/"

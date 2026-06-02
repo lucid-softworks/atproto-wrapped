@@ -1,6 +1,17 @@
 import type { RepoStats } from "../../lib/atproto";
 import { toDisplayHandle } from "../../lib/handle";
 
+function formatActiveSpan(months: number): string {
+  if (months < 12) return `~${months} month${months === 1 ? "" : "s"}`;
+  const years = Math.floor(months / 12);
+  const rem = months % 12;
+  if (rem === 0)
+    return `${years} year${years === 1 ? "" : "s"}`;
+  return `${years} year${years === 1 ? "" : "s"} ${rem} month${
+    rem === 1 ? "" : "s"
+  }`;
+}
+
 export function FooterStrip({ stats }: { stats: RepoStats }) {
   const monthsActive = stats.firstRecordAt
     ? Math.max(
@@ -37,7 +48,7 @@ export function FooterStrip({ stats }: { stats: RepoStats }) {
           })
         : "—",
     ],
-    ["Active for", monthsActive ? `~${monthsActive} months` : "—"],
+    ["Active for", monthsActive ? formatActiveSpan(monthsActive) : "—"],
   ];
 
   return (
