@@ -146,24 +146,21 @@ function ObjectCard({
       : undefined;
 
   return (
-    <figure className="relative flex aspect-square flex-col justify-between overflow-hidden rounded-2xl border-2 border-ink bg-cream p-4">
+    <figure className="flex flex-col gap-2 rounded-2xl border-2 border-ink bg-cream p-4">
       <div className="font-mono text-[10px] tracking-widest text-ink/55 uppercase">
         Object
       </div>
-      <div className="flex flex-1 items-center justify-center text-5xl opacity-30">
-        ◇
-      </div>
       <figcaption className="space-y-1">
-        <div className="line-clamp-2 text-sm font-bold leading-tight tracking-[-0.01em]">
+        <div className="line-clamp-2 text-2xl font-bold leading-tight tracking-[-0.02em]">
           {object.name}
         </div>
         {altPick && (
-          <span className="inline-flex items-center gap-1 rounded-full border border-ink/40 bg-ink/5 px-2 py-0.5 font-mono text-[10px]">
+          <div className="inline-flex items-center gap-1 rounded-full border border-ink/40 bg-ink/5 px-2 py-0.5 font-mono text-[10px]">
             <span className="font-semibold tracking-widest text-ink/55 uppercase">
               {langLabel(altPick.lang)}
             </span>
             <span className="line-clamp-1">{altPick.value}</span>
-          </span>
+          </div>
         )}
       </figcaption>
     </figure>
