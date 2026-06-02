@@ -145,10 +145,15 @@ function ObjectCard({
       ? object.altNames[index % object.altNames.length]
       : undefined;
 
+  const kb =
+    object.modelSize !== undefined
+      ? `${(object.modelSize / 1024).toFixed(1)} KB`
+      : undefined;
   return (
     <figure className="flex flex-col gap-2 rounded-2xl border-2 border-ink bg-cream p-4">
-      <div className="font-mono text-[10px] tracking-widest text-ink/55 uppercase">
-        Object
+      <div className="flex items-baseline justify-between gap-2 font-mono text-[10px] tracking-widest text-ink/55 uppercase">
+        <span>Object</span>
+        {kb && <span className="opacity-65 tabular-nums">{kb}</span>}
       </div>
       <figcaption className="space-y-1">
         <div className="line-clamp-2 text-2xl font-bold leading-tight tracking-[-0.02em]">
@@ -163,6 +168,16 @@ function ObjectCard({
           </div>
         )}
       </figcaption>
+      {object.modelUrl && (
+        <a
+          href={object.modelUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-1 inline-flex w-fit items-center rounded-full border-2 border-ink bg-ink px-3 py-1 font-mono text-[10px] tracking-widest text-cream uppercase hover:bg-cream hover:text-ink"
+        >
+          ⌘ glTF ↗
+        </a>
+      )}
     </figure>
   );
 }

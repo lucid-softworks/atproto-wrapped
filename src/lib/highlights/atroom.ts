@@ -10,6 +10,9 @@ export type AtRoomObject = {
   scale: number | null;
   /** Alternate-language names other than English, if any. */
   altNames: AtRoomNameLang[];
+  /** Direct getBlob URL for the glTF model, if available. */
+  modelUrl?: string;
+  modelSize?: number;
   createdAt: Date | null;
 };
 
@@ -87,16 +90,28 @@ export function getAtRoomHighlights(
 
   if (objectRecords.length === 0 && layoutRecords.length === 0) return null;
 
+  const pdsBase = stats.pds.replace(/\/$/, "");
   const objects: AtRoomObject[] = objectRecords.map((r) => {
     const v = r.value;
     const langs = pickNameLangs(v.nameLangs);
     const englishLang = langs.find((l) => l.lang === "en");
     const name = englishLang?.value ?? strOrUndef(v.name) ?? "Untitled";
     const altNames = langs.filter((l) => l.lang !== "en");
+    const model = v.model as Record<string, unknown> | undefined;
+    const modelRef = model?.ref as Record<string, unknown> | undefined;
+    const modelCid =
+      typeof modelRef?.$link === "string" ? modelRef.$link : undefined;
+    const modelSize =
+      typeof model?.size === "number" ? model.size : undefined;
+    const modelUrl = modelCid
+      ? `${pdsBase}/xrpc/com.atproto.sync.getBlob?did=${encodeURIComponent(stats.did)}&cid=${encodeURIComponent(modelCid)}`
+      : undefined;
     return {
       name,
       scale: numOrNull(v.scale),
       altNames,
+      modelUrl,
+      modelSize,
       createdAt: r.createdAt,
     };
   });
