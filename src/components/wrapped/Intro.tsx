@@ -38,7 +38,7 @@ export function IntroSlide({
           <span className="bg-wrap-pink px-2 py-0.5 text-ink not-italic">
             {stats.byCollection.size}
           </span>{" "}
-          lexicons{scopeSuffix}.
+          lexicons<span className="whitespace-nowrap">{scopeSuffix}.</span>
           <span className="mt-3 block">
             That's a {carMb} MB {span} on the open web.
           </span>
