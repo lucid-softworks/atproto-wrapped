@@ -252,7 +252,7 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
   }> = [
     { key: "bluesky", show: !!bluesky, prefixes: ["app.bsky.", "chat.bsky."], node: bluesky && <FeaturedBlueskySection data={bluesky} /> },
     { key: "music", show: !!music, prefixes: ["app.rocksky.", "fm.teal.", "fm.plyr."], node: music && <FeaturedMusicSection data={music} /> },
-    { key: "popfeed", show: !!popfeed, prefixes: ["social.popfeed."], node: popfeed && <FeaturedPopfeedSection data={popfeed} handle={stats.handle} /> },
+    { key: "popfeed", show: !!popfeed, prefixes: ["social.popfeed."], node: popfeed && <FeaturedPopfeedSection data={popfeed} did={stats.did} /> },
     { key: "flashes", show: !!flashes, prefixes: ["blue.flashes."], node: flashes && <FeaturedFlashesSection data={flashes} /> },
     { key: "grain", show: !!grain, prefixes: ["social.grain."], node: grain && <FeaturedGrainSection data={grain} /> },
     { key: "reading", show: !!reading, prefixes: ["com.whtwnd.", "buzz.bookhive.", "pub.leaflet.", "at.margin.", "at.monomarks.", "my.skylights."], node: reading && <FeaturedReadingSection data={reading} /> },

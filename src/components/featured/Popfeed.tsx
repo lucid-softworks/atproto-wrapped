@@ -4,10 +4,10 @@ import { initial } from "../../lib/format";
 
 export function FeaturedPopfeedSection({
   data,
-  handle,
+  did,
 }: {
   data: PopfeedHighlights;
-  handle: string;
+  did: string;
 }) {
   const typesSummary = Array.from(data.byType.entries())
     .sort((a, b) => b[1] - a[1])
@@ -41,7 +41,7 @@ export function FeaturedPopfeedSection({
 
         <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {data.reviews.map((r, i) => (
-            <ReviewCard key={`${r.title}-${i}`} review={r} handle={handle} />
+            <ReviewCard key={`${r.title}-${i}`} review={r} did={did} />
           ))}
         </div>
       </div>
@@ -51,12 +51,12 @@ export function FeaturedPopfeedSection({
 
 function ReviewCard({
   review,
-  handle,
+  did,
 }: {
   review: PopfeedHighlights["reviews"][number];
-  handle: string;
+  did: string;
 }) {
-  const href = `https://popfeed.social/profile/${handle}/review/${review.rkey}`;
+  const href = `https://popfeed.social/review/at:/${did}/social.popfeed.feed.review/${review.rkey}`;
   return (
     <a
       href={href}
