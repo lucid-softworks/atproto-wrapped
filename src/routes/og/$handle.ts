@@ -67,22 +67,22 @@ function collectionsToServices(collections: string[]): string[] {
   return Array.from(services).sort();
 }
 
-async function renderPng(handle: string): Promise<Uint8Array> {
+async function renderSvg(handle: string): Promise<string> {
   const did = await resolveHandle(handle);
   const didDoc = await getDidDocument(did);
   const pds = getPdsEndpoint(didDoc);
   const collections = await listCollections(pds, did);
   const services = collectionsToServices(collections);
-
-  const svg = buildOgPosterSvg({
+  return buildOgPosterSvg({
     handle,
     collectionCount: collections.length,
     services,
   });
+}
 
+async function rasterizeSvg(svg: string): Promise<Uint8Array> {
   await ensureWasmInit();
   const fontBuffers = await loadFonts();
-
   const resvg = new Resvg(svg, {
     font: { fontBuffers, loadSystemFonts: false },
     fitTo: { mode: "width", value: 1200 },
@@ -107,6 +107,11 @@ export const Route = createFileRoute("/og/$handle")({
           return new Response("invalid handle", { status: 400 });
         }
 
+        const format =
+          new URL(request.url).searchParams.get("format") === "svg"
+            ? "svg"
+            : "png";
+
         const cache = (globalThis as unknown as { caches?: WorkerCaches })
           .caches?.default;
         const cacheKey = new Request(request.url, { method: "GET" });
@@ -116,7 +121,19 @@ export const Route = createFileRoute("/og/$handle")({
         }
 
         try {
-          const png = await renderPng(handle);
+          const svg = await renderSvg(handle);
+          if (format === "svg") {
+            const response = new Response(svg, {
+              status: 200,
+              headers: {
+                "Content-Type": "image/svg+xml; charset=utf-8",
+                "Cache-Control": "public, max-age=86400, s-maxage=86400",
+              },
+            });
+            if (cache) await cache.put(cacheKey, response.clone());
+            return response;
+          }
+          const png = await rasterizeSvg(svg);
           const response = new Response(png as BodyInit, {
             status: 200,
             headers: {
@@ -124,9 +141,7 @@ export const Route = createFileRoute("/og/$handle")({
               "Cache-Control": "public, max-age=86400, s-maxage=86400",
             },
           });
-          if (cache) {
-            await cache.put(cacheKey, response.clone());
-          }
+          if (cache) await cache.put(cacheKey, response.clone());
           return response;
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);

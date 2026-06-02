@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f1ead9" />
+
+  <!-- decorative corner blocks (stay clear of the handle text area) -->
+  <rect x="980" y="430" width="180" height="120" rx="14" fill="#d8ff4d" stroke="#0a0a0a" stroke-width="3" />
+  <rect x="1000" y="180" width="140" height="90" rx="14" fill="#4dd4ff" stroke="#0a0a0a" stroke-width="3" />
+
+  <!-- top bar -->
+  <g transform="translate(60 90)">
+    <circle cx="9" cy="0" r="9" fill="#ff4d97" />
+    <text x="28" y="6" font-family="JetBrains Mono, ui-monospace, monospace" font-size="18" font-weight="500" letter-spacing="2" fill="#0a0a0a">ATPROTO·WRAPPED</text>
+    <text x="1080" y="6" font-family="JetBrains Mono, ui-monospace, monospace" font-size="16" letter-spacing="2.5" fill="#0a0a0a" opacity="0.55" text-anchor="end">ISSUE 01</text>
+  </g>
+  <line x1="60" y1="124" x2="1140" y2="124" stroke="#0a0a0a" stroke-opacity="0.18" stroke-width="2" />
+
+  <!-- eyebrow -->
+  <text x="60" y="200" font-family="Instrument Serif, Georgia, serif" font-style="italic" font-size="48" fill="#0a0a0a" opacity="0.7">A year of</text>
+
+  <!-- handle giant -->
+  <text x="60" y="320" font-family="Bricolage Grotesque, Arial Black, sans-serif" font-weight="800" font-size="108" letter-spacing="-3" fill="#0a0a0a">@imlunahey.com</text>
+
+  <!-- wrapped italic -->
+  <text x="60" y="404" font-family="Instrument Serif, Georgia, serif" font-style="italic" font-size="76" fill="#0a0a0a">wrapped.</text>
+
+  <!-- subtitle -->
+  <text x="60" y="448" font-family="JetBrains Mono, ui-monospace, monospace" font-size="20" fill="#0a0a0a" opacity="0.65" letter-spacing="1">85 lexicons across the ATmosphere</text>
+
+  <!-- service strip -->
+  <text x="60" y="574" font-family="JetBrains Mono, ui-monospace, monospace" font-size="16" fill="#0a0a0a" opacity="0.7" letter-spacing="1.5">actor.rpg  ·  app.atbuddy  ·  app.bsky  ·  app.protoimsg  ·  app.rocksky  ·  blue.badge   +25 more</text>
+
+  <!-- corner mark -->
+  <circle cx="1120" cy="568" r="6" fill="#0a0a0a" />
+</svg>
