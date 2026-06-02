@@ -6,6 +6,8 @@ export type StandardDoc = {
   tags: string[];
   publishedAt: Date | null;
   createdAt: Date | null;
+  /** Web URL built from `publication.url + doc.path` when both are known. */
+  url?: string;
 };
 
 export type StandardDocsHighlights = {
@@ -40,21 +42,35 @@ export function getStandardDocsHighlights(
     byCollection.get("site.standard.graph.recommend") ?? [];
   if (docRecords.length === 0 && recommendRecords.length === 0) return null;
 
+  // Build pubUri → pubUrl from the user's own publications so we can give
+  // each of their docs a real web link.
+  const pubRecords = byCollection.get("site.standard.publication") ?? [];
+  const pubUrls = new Map<string, string>();
+  for (const r of pubRecords) {
+    const url = strOrNull((r.value as Record<string, unknown>).url);
+    if (url) pubUrls.set(r.uri, url.replace(/\/$/, ""));
+  }
+
   const tagSet = new Set<string>();
   const docs: StandardDoc[] = docRecords.map((r) => {
-    const v = r.value;
-    const rawTags = Array.isArray(v.tags) ? v.tags : [];
+    const v = r.value as Record<string, unknown>;
+    const rawTags = Array.isArray(v.tags) ? (v.tags as unknown[]) : [];
     const tags = rawTags
       .map((t) => (typeof t === "string" ? t : ""))
       .filter((t) => t.length > 0);
     for (const t of tags) tagSet.add(t);
     const publishedAt = parseDate(v.publishedAt);
+    const site = strOrNull(v.site);
+    const pubUrl = site ? pubUrls.get(site) : undefined;
+    // Standard's web URL is <publication.url>/<document.rkey>.
+    const docUrl = pubUrl ? `${pubUrl}/${r.rkey}` : undefined;
     return {
       title: strOrNull(v.title) ?? "Untitled",
       description: strOrUndef(v.description),
       tags,
       publishedAt,
       createdAt: r.createdAt,
+      url: docUrl,
     };
   });
   docs.sort((a, b) => {
