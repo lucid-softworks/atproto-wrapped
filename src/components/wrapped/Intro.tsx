@@ -19,7 +19,7 @@ export function IntroSlide({
         <div className="font-mono text-xs tracking-widest text-ink/60 uppercase">
           A wrapped for
         </div>
-        <h1 className="fade-up mt-3 text-[clamp(3rem,12vw,11rem)] leading-[0.9] font-bold tracking-[-0.04em] text-ink">
+        <h1 className="fade-up mt-3 text-[clamp(2.25rem,9vw,7rem)] leading-[0.95] font-bold tracking-[-0.04em] text-ink break-words [overflow-wrap:anywhere]">
           @{toDisplayHandle(stats.handle)}
         </h1>
         <p

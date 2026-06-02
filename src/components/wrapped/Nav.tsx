@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { toDisplayHandle } from "../../lib/handle";
 import { ShareButton } from "./ShareButton";
+import { YearDropdown } from "./YearDropdown";
 
 export function StickyNav({
   handle,
@@ -34,30 +35,11 @@ export function StickyNav({
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {years.length > 0 && (
-            <label className="relative flex items-center">
-              <span className="sr-only">Filter by year</span>
-              <select
-                value={year === "all" ? "all" : String(year)}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  onYearChange(v === "all" ? "all" : Number(v));
-                }}
-                className="appearance-none rounded-full border-2 border-ink bg-cream px-3 py-1.5 pr-8 font-mono text-xs tracking-widest uppercase shadow-[3px_3px_0_0_var(--color-ink)] transition hover:bg-wrap-yellow focus:outline-none"
-              >
-                <option value="all">All time</option>
-                {years.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
-              <span
-                aria-hidden
-                className="pointer-events-none absolute right-3 font-mono text-[10px]"
-              >
-                ▾
-              </span>
-            </label>
+            <YearDropdown
+              years={years}
+              year={year}
+              onChange={onYearChange}
+            />
           )}
           <ShareButton onShare={onShare} variant="small" />
           <Link
