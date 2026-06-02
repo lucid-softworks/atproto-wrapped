@@ -350,44 +350,12 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
     }))
     .sort((a, b) => b.count - a.count);
 
-  // De-clumping: rebuild the order so no two adjacent sections share a
-  // theme color when avoidable. Classic "reorganize" approach — group by
-  // theme, then at each step pull from the theme with the most remaining
-  // items (skipping the most-recently-placed theme so we never put two
-  // same-color sections back-to-back unless one theme has > half the
-  // items and adjacency is mathematically unavoidable).
-  const byTheme = new Map<string, Feature[]>();
-  for (const f of features) {
-    const arr = byTheme.get(f.theme) ?? [];
-    arr.push(f);
-    byTheme.set(f.theme, arr);
-  }
-  // Each group's items stay sorted by activity count (features was
-  // already sorted desc before grouping).
-  type Group = { theme: string; items: Feature[] };
-  const groups: Group[] = Array.from(byTheme.entries()).map(
-    ([theme, items]) => ({ theme, items }),
-  );
-  const ordered: Feature[] = [];
-  let lastTheme: string | null = null;
-  while (groups.length > 0) {
-    groups.sort((a, b) => {
-      // Largest group first; ties broken by highest-priority head item.
-      if (a.items.length !== b.items.length) {
-        return b.items.length - a.items.length;
-      }
-      return (b.items[0]?.count ?? 0) - (a.items[0]?.count ?? 0);
-    });
-    // Pick the first group whose theme differs from the last placed one;
-    // if everything left is the last theme, accept the forced adjacency.
-    let pick = groups.find((g) => g.theme !== lastTheme) ?? groups[0];
-    const item = pick.items.shift()!;
-    ordered.push(item);
-    lastTheme = item.theme;
-    if (pick.items.length === 0) {
-      groups.splice(groups.indexOf(pick), 1);
-    }
-  }
+  // Strict activity-count ordering. The user's top service should always
+  // come first, period — we don't sacrifice that to break up same-color
+  // adjacency. (The bucket-heap approach prioritized whichever theme had
+  // the most sections, which pushed Bluesky-power-users' Bluesky section
+  // below smaller-count services that happened to share a theme.)
+  const ordered = features;
 
   async function onShare() {
     return shareWrappedUrl(stats.handle);
