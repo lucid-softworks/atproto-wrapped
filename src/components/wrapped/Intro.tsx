@@ -14,7 +14,7 @@ export function IntroSlide({
   year: number | "all";
 }) {
   const carMb = (stats.carBytes / (1024 * 1024)).toFixed(1);
-  const scopeSuffix = year === "all" ? " since you joined" : ` in ${year}`;
+  const scopePrefix = year === "all" ? "Since you joined" : `In ${year}`;
   const span = year === "all" ? "life" : "year";
   return (
     <section className="relative overflow-hidden border-b-2 border-ink bg-cream">
@@ -38,9 +38,9 @@ export function IntroSlide({
           <span className="bg-wrap-pink px-2 py-0.5 text-ink not-italic">
             {stats.byCollection.size}
           </span>{" "}
-          lexicons<span className="whitespace-nowrap">{scopeSuffix}.</span>
+          lexicons.
           <span className="mt-3 block">
-            That's a {carMb} MB {span} on the open web.
+            {scopePrefix}, that's a {carMb} MB {span} on the open web.
           </span>
         </p>
 
