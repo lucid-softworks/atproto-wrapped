@@ -14,8 +14,6 @@ const getOrigin = createIsomorphicFn()
   })
   .client(() => window.location.origin);
 
-const DEFAULT_HANDLE = "imlunahey.com";
-
 export const Route = createFileRoute("/")({
   component: Home,
   head: () => {
@@ -45,7 +43,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const navigate = useNavigate();
-  const [handle, setHandle] = useState(DEFAULT_HANDLE);
+  const [handle, setHandle] = useState("");
 
   // Warm the home OG cache so the CF Cache entry is hot before anyone
   // shares the bare site URL.
