@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import type { StandardDocsHighlights } from "../../lib/highlights/standardDocs";
 import { fetchRecordByUri, parseAtUri } from "../../lib/highlights/_atUri";
+import { resolveHandlesForDids } from "../../lib/bskyProfiles";
+import { toDisplayHandle } from "../../lib/handle";
 import { FeaturedRow } from "./_shared";
 
 type RemoteDoc = {
@@ -61,6 +63,15 @@ export function FeaturedStandardDocsSection({
     staleTime: 1000 * 60 * 60,
   });
   const recs = recsQuery.data ?? [];
+
+  const authorDids = Array.from(new Set(recs.map((r) => r.did)));
+  const authorsQuery = useQuery({
+    queryKey: ["standard-rec-authors", authorDids],
+    queryFn: () => resolveHandlesForDids(authorDids),
+    enabled: authorDids.length > 0,
+    staleTime: 1000 * 60 * 60,
+  });
+  const authorHandles = authorsQuery.data ?? new Map<string, string>();
 
   return (
     <section className="relative overflow-hidden border-b-2 border-ink bg-ink text-cream">
@@ -156,7 +167,14 @@ export function FeaturedStandardDocsSection({
                     key={`${d.uri}-${i}`}
                     className="rounded-2xl border-2 border-cream bg-ink p-4"
                   >
-                    <div className="font-semibold leading-tight">{d.title}</div>
+                    <a
+                      href={`https://pdsls.dev/${d.uri}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold leading-tight hover:underline"
+                    >
+                      {d.title}
+                    </a>
                     {d.tags.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {d.tags.map((t) => (
@@ -175,7 +193,21 @@ export function FeaturedStandardDocsSection({
                       </p>
                     )}
                     <div className="mt-2 flex items-center justify-between font-mono text-[10px] text-cream/55">
-                      <span className="truncate">by {d.did}</span>
+                      {(() => {
+                        const h = authorHandles.get(d.did);
+                        return h ? (
+                          <a
+                            href={`https://bsky.app/profile/${h}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="truncate hover:underline"
+                          >
+                            by @{toDisplayHandle(h)}
+                          </a>
+                        ) : (
+                          <span className="truncate">by {d.did}</span>
+                        );
+                      })()}
                       {d.publishedAt && (
                         <span>
                           {d.publishedAt.toLocaleDateString(undefined, {
@@ -185,6 +217,16 @@ export function FeaturedStandardDocsSection({
                           })}
                         </span>
                       )}
+                    </div>
+                    <div className="mt-2">
+                      <a
+                        href={`https://pdsls.dev/${d.uri}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-block rounded-full border-2 border-cream bg-cream px-3 py-1 font-mono text-[10px] tracking-widest text-ink uppercase hover:bg-ink hover:text-cream"
+                      >
+                        Read ↗
+                      </a>
                     </div>
                   </li>
                 ))}
