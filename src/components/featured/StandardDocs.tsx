@@ -113,10 +113,10 @@ export function FeaturedStandardDocsSection({
   }
 
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-ink text-cream">
+    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-cyan text-ink">
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">
-          <div className="font-mono text-xs tracking-widest text-cream/65 uppercase">
+          <div className="font-mono text-xs tracking-widest text-ink/65 uppercase">
             Spotlight · Standard
           </div>
         </div>
@@ -131,9 +131,9 @@ export function FeaturedStandardDocsSection({
             {stats.map(([k, n]) => (
               <div
                 key={k}
-                className="rounded-2xl border-2 border-cream bg-ink px-4 py-2"
+                className="rounded-2xl border-2 border-ink bg-cream px-4 py-2"
               >
-                <div className="font-mono text-[10px] tracking-widest text-cream/65 uppercase">
+                <div className="font-mono text-[10px] tracking-widest text-ink/65 uppercase">
                   {k}
                 </div>
                 <div className="text-xl font-bold tabular-nums">
@@ -151,7 +151,7 @@ export function FeaturedStandardDocsSection({
               {data.docs.map((d, i) => (
                 <li
                   key={`${d.title}-${i}`}
-                  className="rounded-2xl border-2 border-cream bg-ink p-4"
+                  className="rounded-2xl border-2 border-ink bg-cream p-4"
                 >
                   {d.url ? (
                     <a
@@ -172,7 +172,7 @@ export function FeaturedStandardDocsSection({
                       {d.tags.map((t) => (
                         <span
                           key={t}
-                          className="rounded-full border border-cream/40 px-2 py-0.5 font-mono text-[10px] tracking-widest text-cream/70 uppercase"
+                          className="rounded-full border border-ink/40 px-2 py-0.5 font-mono text-[10px] tracking-widest text-ink/70 uppercase"
                         >
                           {t}
                         </span>
@@ -180,11 +180,11 @@ export function FeaturedStandardDocsSection({
                     </div>
                   )}
                   {d.description && (
-                    <p className="mt-2 line-clamp-3 text-sm text-cream/95">
+                    <p className="mt-2 line-clamp-3 text-sm text-ink/95">
                       {d.description}
                     </p>
                   )}
-                  <div className="mt-2 flex items-center justify-between font-mono text-[10px] text-cream/55">
+                  <div className="mt-2 flex items-center justify-between font-mono text-[10px] text-ink/55">
                     {(d.publishedAt ?? d.createdAt) && (
                       <span>
                         {(d.publishedAt ?? d.createdAt)?.toLocaleDateString(
@@ -202,7 +202,7 @@ export function FeaturedStandardDocsSection({
                         href={d.url}
                         target="_blank"
                         rel="noreferrer"
-                        className="rounded-full border border-cream/60 px-2 py-0.5 tracking-widest uppercase hover:bg-cream hover:text-ink"
+                        className="rounded-full border border-ink/60 px-2 py-0.5 tracking-widest uppercase hover:bg-cream hover:text-ink"
                       >
                         Read ↗
                       </a>
@@ -220,7 +220,7 @@ export function FeaturedStandardDocsSection({
               label={`Documents you recommended · ${data.recommendedUris.length}`}
             />
             {recsQuery.isLoading && recs.length === 0 ? (
-              <div className="mt-4 font-mono text-xs text-cream/55">
+              <div className="mt-4 font-mono text-xs text-ink/55">
                 Loading…
               </div>
             ) : null}
@@ -232,7 +232,7 @@ export function FeaturedStandardDocsSection({
                   return (
                     <li
                       key={`${d.uri}-${i}`}
-                      className="rounded-2xl border-2 border-cream bg-ink p-4"
+                      className="rounded-2xl border-2 border-ink bg-cream p-4"
                     >
                       <a
                         href={url}
@@ -247,7 +247,7 @@ export function FeaturedStandardDocsSection({
                           {d.tags.map((t) => (
                             <span
                               key={t}
-                              className="rounded-full border border-cream/40 px-2 py-0.5 font-mono text-[10px] tracking-widest text-cream/70 uppercase"
+                              className="rounded-full border border-ink/40 px-2 py-0.5 font-mono text-[10px] tracking-widest text-ink/70 uppercase"
                             >
                               {t}
                             </span>
@@ -255,11 +255,11 @@ export function FeaturedStandardDocsSection({
                         </div>
                       )}
                       {d.description && (
-                        <p className="mt-2 line-clamp-3 text-sm text-cream/95">
+                        <p className="mt-2 line-clamp-3 text-sm text-ink/95">
                           {d.description}
                         </p>
                       )}
-                      <div className="mt-2 flex items-center justify-between font-mono text-[10px] text-cream/55">
+                      <div className="mt-2 flex items-center justify-between font-mono text-[10px] text-ink/55">
                         {author ? (
                           <a
                             href={`https://bsky.app/profile/${author}`}

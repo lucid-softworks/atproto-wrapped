@@ -11,7 +11,7 @@ export function FeaturedReadingSection({ data }: { data: ReadingHighlights }) {
   ].filter(([, n]) => (n as number) > 0) as Array<[string, number]>;
 
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-ink text-cream">
+    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-violet text-cream">
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">
           <div className="font-mono text-xs tracking-widest text-cream/65 uppercase">
