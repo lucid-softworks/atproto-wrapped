@@ -192,12 +192,21 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
           latestRecordAt = r.createdAt;
       }
     }
+    // Approximate the year's slice of the CAR by ratio. The CAR file
+    // isn't a per-record breakdown, so we can't compute it exactly, but
+    // records × bytes-per-record is close enough for the "MB life on
+    // the open web" headline.
+    const carBytes =
+      stats.totalRecords > 0
+        ? Math.round((stats.carBytes * totalRecords) / stats.totalRecords)
+        : 0;
     return {
       ...stats,
       byCollection: filtered,
       totalRecords,
       firstRecordAt,
       latestRecordAt,
+      carBytes,
     };
   }, [stats, year]);
 
