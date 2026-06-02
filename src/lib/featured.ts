@@ -1089,6 +1089,24 @@ export type AnisotaItem = {
   quantity: number;
 };
 
+export type AnisotaSession = {
+  platform?: string;
+  status?: string;
+  startedAt: Date | null;
+  endedAt: Date | null;
+  durationMs?: number;
+  xpGained?: number;
+  totalEvents?: number;
+  level?: number;
+  pagesVisited?: string[];
+};
+
+export type AnisotaFeedPost = {
+  text?: string;
+  imageUrl?: string;
+  createdAt: Date | null;
+};
+
 export type AnisotaHighlights = {
   level: number | null;
   totalXP: number | null;
@@ -1104,6 +1122,8 @@ export type AnisotaHighlights = {
   feedPosts: number;
   inventoryTotal: number;
   items: AnisotaItem[];
+  sessionDetails: AnisotaSession[];
+  posts: AnisotaFeedPost[];
 };
 
 export function getAnisotaHighlights(
@@ -1183,15 +1203,71 @@ export function getAnisotaHighlights(
   });
 
   const inventoryTotal = items.reduce((s, i) => s + i.quantity, 0);
-  const sessions = (byCollection.get("net.anisota.beta.game.session") ?? [])
-    .length;
+  const sessionRecords =
+    byCollection.get("net.anisota.beta.game.session") ?? [];
+  const sessions = sessionRecords.length;
+  const sessionDetails: AnisotaSession[] = sessionRecords
+    .map((r) => {
+      const v = r.value;
+      const summary = v.activitySummary as Record<string, unknown> | undefined;
+      return {
+        platform: strOrUndef(v.platform),
+        status: strOrUndef(v.status),
+        startedAt:
+          typeof v.startedAt === "string"
+            ? new Date(Date.parse(v.startedAt))
+            : null,
+        endedAt:
+          typeof v.endedAt === "string"
+            ? new Date(Date.parse(v.endedAt))
+            : null,
+        durationMs:
+          typeof v.duration === "number" ? (v.duration as number) : undefined,
+        xpGained:
+          typeof summary?.xpGainedThisSession === "number"
+            ? (summary.xpGainedThisSession as number)
+            : undefined,
+        totalEvents:
+          typeof summary?.totalEvents === "number"
+            ? (summary.totalEvents as number)
+            : undefined,
+        level:
+          typeof summary?.currentLevel === "number"
+            ? (summary.currentLevel as number)
+            : undefined,
+        pagesVisited: Array.isArray(summary?.pagesVisited)
+          ? (summary!.pagesVisited as unknown[])
+              .filter((p): p is string => typeof p === "string")
+              .slice(0, 8)
+          : undefined,
+      };
+    })
+    .sort(
+      (a, b) =>
+        (b.startedAt?.getTime() ?? 0) - (a.startedAt?.getTime() ?? 0),
+    )
+    .slice(0, 6);
+
   const expeditions =
     (byCollection.get("net.anisota.chronicle.expedition") ?? []).length +
     (byCollection.get("net.anisota.chronicle.expedition.camp") ?? []).length;
   const achievements =
     (byCollection.get("net.anisota.chronicle.achievement") ?? []).length +
     (byCollection.get("net.anisota.beta.game.achievement") ?? []).length;
-  const feedPosts = (byCollection.get("net.anisota.feed.post") ?? []).length;
+
+  const feedPostRecords = byCollection.get("net.anisota.feed.post") ?? [];
+  const feedPosts = feedPostRecords.length;
+  const posts: AnisotaFeedPost[] = feedPostRecords
+    .map((r) => ({
+      text: strOrUndef(r.value.text),
+      imageUrl: undefined,
+      createdAt: r.createdAt,
+    }))
+    .sort(
+      (a, b) =>
+        (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0),
+    )
+    .slice(0, 6);
 
   return {
     level,
@@ -1208,6 +1284,8 @@ export function getAnisotaHighlights(
     feedPosts,
     inventoryTotal,
     items: items.slice(0, 16),
+    sessionDetails,
+    posts,
   };
 }
 
@@ -1359,9 +1437,11 @@ export function getFlashesHighlights(
     (a, b) =>
       (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0),
   );
+  const withImages = collected.filter((p) => p.imageUrl);
+  if (withImages.length === 0) return null;
   return {
     total: allPosts.length,
-    posts: collected.filter((p) => p.imageUrl).slice(0, 12),
+    posts: withImages.slice(0, 12),
   };
 }
 
