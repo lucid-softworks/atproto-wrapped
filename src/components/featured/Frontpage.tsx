@@ -149,10 +149,10 @@ export function FeaturedFrontpageSection({
                 return (
                   <li
                     key={`${v.subjectUri}-${i}`}
-                    className="flex items-baseline justify-between gap-3 rounded-xl border-2 border-ink bg-cream p-3"
+                    className="flex items-baseline justify-between gap-3 overflow-hidden rounded-xl border-2 border-ink bg-cream p-3"
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="line-clamp-2 font-semibold leading-tight">
+                      <div className="line-clamp-2 font-semibold leading-tight [overflow-wrap:anywhere]">
                         {title}
                       </div>
                       {remote?.url && (
