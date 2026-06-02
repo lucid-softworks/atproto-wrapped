@@ -1,4 +1,44 @@
+import { useQuery } from "@tanstack/react-query";
 import type { SmokeSignalHighlights } from "../../lib/featured";
+import { fetchRecordByUri } from "../../lib/highlights/_atUri";
+
+type RemoteEvent = {
+  name: string;
+  description?: string;
+  startsAt: Date | null;
+};
+
+async function fetchEvents(uris: string[]): Promise<Map<string, RemoteEvent>> {
+  const out = new Map<string, RemoteEvent>();
+  await Promise.all(
+    uris.map(async (uri) => {
+      const v = await fetchRecordByUri<Record<string, unknown>>(uri);
+      if (!v) return;
+      const name =
+        (typeof v.name === "string" && v.name) ||
+        (typeof v.title === "string" && v.title) ||
+        "Untitled event";
+      const description =
+        typeof v.description === "string" ? v.description : undefined;
+      const startsAt =
+        typeof v.startsAt === "string"
+          ? new Date(Date.parse(v.startsAt))
+          : null;
+      out.set(uri, { name, description, startsAt });
+    }),
+  );
+  return out;
+}
+
+function formatDateTime(d: Date): string {
+  return d.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
 
 export function FeaturedSmokeSignalSection({
   data,
@@ -8,6 +48,18 @@ export function FeaturedSmokeSignalSection({
   const rsvpStats = Array.from(data.rsvpsByStatus.entries()).sort(
     (a, b) => b[1] - a[1],
   );
+
+  const rsvpUris = data.recentRsvps
+    .map((r) => r.eventUri)
+    .filter((u): u is string => !!u);
+  const eventsQuery = useQuery({
+    queryKey: ["smokesignal-rsvp-events", rsvpUris],
+    queryFn: () => fetchEvents(rsvpUris),
+    enabled: rsvpUris.length > 0,
+    staleTime: 1000 * 60 * 60,
+  });
+  const remoteEvents = eventsQuery.data ?? new Map<string, RemoteEvent>();
+
   return (
     <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-red text-cream">
       <div className="grain absolute inset-0 opacity-[0.04]" />
@@ -74,12 +126,63 @@ export function FeaturedSmokeSignalSection({
                 >
                   <div className="font-semibold">{e.name}</div>
                   {e.description && (
-                    <p className="mt-1 line-clamp-2 font-serif text-sm italic text-cream/80">
+                    <p className="mt-1 line-clamp-2 text-sm text-cream/95">
                       {e.description}
                     </p>
                   )}
                 </li>
               ))}
+            </ul>
+          </div>
+        )}
+
+        {data.recentRsvps.length > 0 && (
+          <div className="mt-10">
+            <div className="font-mono text-xs tracking-widest text-cream/65 uppercase">
+              Events you RSVP'd to
+            </div>
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+              {data.recentRsvps.map((r, i) => {
+                const ev = r.eventUri ? remoteEvents.get(r.eventUri) : null;
+                return (
+                  <li
+                    key={`${r.eventUri ?? "rsvp"}-${i}`}
+                    className="flex flex-col gap-2 rounded-xl border-2 border-cream bg-wrap-red p-4"
+                  >
+                    <div className="flex items-baseline justify-between gap-2">
+                      <div className="font-bold leading-tight">
+                        {ev?.name ??
+                          (eventsQuery.isLoading
+                            ? "Loading…"
+                            : "Unknown event")}
+                      </div>
+                      <span className="shrink-0 rounded-full border border-cream/60 px-2 py-0.5 font-mono text-[10px] tracking-widest uppercase">
+                        {r.status}
+                      </span>
+                    </div>
+                    {ev?.description && (
+                      <p className="line-clamp-2 text-sm text-cream/95">
+                        {ev.description}
+                      </p>
+                    )}
+                    <div className="flex flex-wrap items-center gap-3 font-mono text-[11px] text-cream/70">
+                      {ev?.startsAt && (
+                        <span>{formatDateTime(ev.startsAt)}</span>
+                      )}
+                      {r.createdAt && (
+                        <span className="text-cream/55">
+                          RSVP'd{" "}
+                          {r.createdAt.toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
