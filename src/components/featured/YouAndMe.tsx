@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { YouAndMeHighlights } from "../../lib/featured";
 import { resolveHandlesForDids } from "../../lib/bskyProfiles";
+import { toDisplayHandle } from "../../lib/handle";
 
 export function FeaturedYouAndMeSection({
   data,
@@ -38,7 +39,7 @@ export function FeaturedYouAndMeSection({
           {data.connections.map((c, i) => {
             const handle = handles.get(c.subject);
             const href = `https://bsky.app/profile/${handle ?? c.subject}`;
-            const label = handle ? `@${handle}` : c.subject;
+            const label = handle ? `@${toDisplayHandle(handle)}` : c.subject;
             return (
               <li key={`${c.subject}-${i}`}>
                 <a

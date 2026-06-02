@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { toDisplayHandle } from "../../lib/handle";
 import { ShareButton } from "./ShareButton";
 
 export function StickyNav({
@@ -17,7 +18,7 @@ export function StickyNav({
             ATPROTO·WRAPPED
           </span>
           <span className="ml-3 hidden font-mono text-sm text-ink/60 sm:inline">
-            / @{handle}
+            / @{toDisplayHandle(handle)}
           </span>
         </div>
         <div className="flex items-center gap-2">

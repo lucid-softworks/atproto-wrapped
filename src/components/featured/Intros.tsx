@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { IntrosHighlights } from "../../lib/highlights/intros";
 import { resolveHandlesForDids } from "../../lib/bskyProfiles";
+import { toDisplayHandle } from "../../lib/handle";
 
 export function FeaturedIntrosSection({ data }: { data: IntrosHighlights }) {
   const dids = data.intros.map((i) => i.subject).filter(Boolean);
@@ -34,7 +35,7 @@ export function FeaturedIntrosSection({ data }: { data: IntrosHighlights }) {
             const handle = handles.get(intro.subject);
             const href = `https://bsky.app/profile/${handle ?? intro.subject}`;
             const aboutLabel = handle
-              ? `@${handle}`
+              ? `@${toDisplayHandle(handle)}`
               : intro.subject
                 ? intro.subject
                 : "someone";

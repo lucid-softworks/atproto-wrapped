@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { HighFiveHighlights } from "../../lib/highlights/highFive";
 import { resolveHandlesForDids } from "../../lib/bskyProfiles";
+import { toDisplayHandle } from "../../lib/handle";
 
 export function FeaturedHighFiveSection({
   data,
@@ -39,7 +40,7 @@ export function FeaturedHighFiveSection({
           {data.highFives.map((h, i) => {
             const handle = handles.get(h.subject);
             const href = `https://bsky.app/profile/${handle ?? h.subject}`;
-            const label = handle ? `@${handle}` : h.subject;
+            const label = handle ? `@${toDisplayHandle(handle)}` : h.subject;
             return (
               <li key={`${h.subject}-${i}`}>
                 <a

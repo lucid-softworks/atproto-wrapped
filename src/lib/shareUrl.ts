@@ -1,10 +1,13 @@
+import { toDisplayHandle } from "./handle";
+
 export type ShareResult = "shared" | "copied" | "failed";
 
 export async function shareWrappedUrl(handle: string): Promise<ShareResult> {
   if (typeof window === "undefined") return "failed";
+  const display = toDisplayHandle(handle);
   const url = `${window.location.origin}/@${handle}`;
-  const title = `@${handle}'s ATproto Wrapped`;
-  const text = `A year of @${handle} across the ATmosphere.`;
+  const title = `@${display}'s ATproto Wrapped`;
+  const text = `A year of @${display} across the ATmosphere.`;
 
   if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
     try {

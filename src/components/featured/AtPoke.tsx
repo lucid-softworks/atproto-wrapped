@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { AtPokeHighlights } from "../../lib/highlights/atpoke";
 import { resolveHandlesForDids } from "../../lib/bskyProfiles";
+import { toDisplayHandle } from "../../lib/handle";
 
 export function FeaturedAtPokeSection({ data }: { data: AtPokeHighlights }) {
   const dids = data.pokes.map((p) => p.subject).filter(Boolean);
@@ -33,7 +34,7 @@ export function FeaturedAtPokeSection({ data }: { data: AtPokeHighlights }) {
           {data.pokes.map((p, i) => {
             const handle = handles.get(p.subject);
             const href = `https://bsky.app/profile/${handle ?? p.subject}`;
-            const label = handle ? `@${handle}` : p.subject;
+            const label = handle ? `@${toDisplayHandle(handle)}` : p.subject;
             return (
               <li key={`${p.subject}-${i}`}>
                 <a

@@ -1,5 +1,6 @@
 import type { BlueskyHighlights } from "../../lib/featured";
 import { compactNumber } from "../../lib/format";
+import { toDisplayHandle } from "../../lib/handle";
 
 const BSKY_HERO_THEME: Record<
   BlueskyHighlights["hero"][number]["theme"],
@@ -91,7 +92,8 @@ export function FeaturedBlueskySection({ data }: { data: BlueskyHighlights }) {
             </div>
             <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {data.verifiedRecent.map((v, i) => {
-                const display = v.displayName ?? v.handle ?? v.did;
+                const display =
+                  v.displayName ?? (v.handle && toDisplayHandle(v.handle)) ?? v.did;
                 const profileHref = v.handle
                   ? `https://bsky.app/profile/${v.handle}`
                   : `https://bsky.app/profile/${v.did}`;
@@ -110,7 +112,7 @@ export function FeaturedBlueskySection({ data }: { data: BlueskyHighlights }) {
                         <div className="truncate font-semibold">{display}</div>
                         {v.handle && (
                           <div className="truncate font-mono text-[11px] opacity-65">
-                            @{v.handle}
+                            @{toDisplayHandle(v.handle)}
                           </div>
                         )}
                       </div>

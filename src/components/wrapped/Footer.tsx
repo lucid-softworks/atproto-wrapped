@@ -1,4 +1,5 @@
 import type { RepoStats } from "../../lib/atproto";
+import { toDisplayHandle } from "../../lib/handle";
 
 export function FooterStrip({ stats }: { stats: RepoStats }) {
   const monthsActive = stats.firstRecordAt
@@ -14,7 +15,7 @@ export function FooterStrip({ stats }: { stats: RepoStats }) {
   const rows: Array<[string, string]> = [
     ["DID", stats.did],
     ["PDS", stats.pds],
-    ["Handle", `@${stats.handle}`],
+    ["Handle", `@${toDisplayHandle(stats.handle)}`],
     ["Repo size", `${(stats.carBytes / (1024 * 1024)).toFixed(2)} MB`],
     [
       "First record",

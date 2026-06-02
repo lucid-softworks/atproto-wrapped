@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { AtVouchHighlights } from "../../lib/highlights/atvouch";
 import { resolveHandlesForDids } from "../../lib/bskyProfiles";
+import { toDisplayHandle } from "../../lib/handle";
 
 export function FeaturedAtVouchSection({
   data,
@@ -37,7 +38,7 @@ export function FeaturedAtVouchSection({
           {data.vouches.map((v, i) => {
             const handle = handles.get(v.subject);
             const href = `https://bsky.app/profile/${handle ?? v.subject}`;
-            const label = handle ? `@${handle}` : v.subject;
+            const label = handle ? `@${toDisplayHandle(handle)}` : v.subject;
             return (
               <li key={`${v.subject}-${i}`}>
                 <a

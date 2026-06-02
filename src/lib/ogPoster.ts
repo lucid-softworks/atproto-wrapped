@@ -1,3 +1,5 @@
+import { toDisplayHandle } from "./handle";
+
 const W = 1200;
 const H = 630;
 
@@ -186,7 +188,7 @@ export function buildHomeOgSvg(): string {
 }
 
 export function buildOgPosterSvg(input: OgPosterInput): string {
-  const handle = `@${input.handle}`;
+  const handle = `@${toDisplayHandle(input.handle)}`;
   const handleSize = fitHandleSize(handle);
 
   const topBarY = 82;

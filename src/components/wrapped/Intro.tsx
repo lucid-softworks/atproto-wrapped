@@ -1,4 +1,5 @@
 import type { RepoStats } from "../../lib/atproto";
+import { toDisplayHandle } from "../../lib/handle";
 import { ShareButton } from "./ShareButton";
 
 export function IntroSlide({
@@ -19,7 +20,7 @@ export function IntroSlide({
           A wrapped for
         </div>
         <h1 className="fade-up mt-3 text-[clamp(3rem,12vw,11rem)] leading-[0.9] font-bold tracking-[-0.04em] text-ink">
-          @{stats.handle}
+          @{toDisplayHandle(stats.handle)}
         </h1>
         <p
           className="fade-up mt-8 max-w-3xl font-serif text-2xl text-ink/80 italic sm:text-4xl"

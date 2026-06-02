@@ -8,6 +8,7 @@ import {
   type FetchProgress,
   type RepoStats,
 } from "../lib/atproto";
+import { toDisplayHandle } from "../lib/handle";
 import { Landing } from "../components/Landing";
 import { Wrapped } from "../components/Wrapped";
 
@@ -28,8 +29,9 @@ export const Route = createFileRoute("/@{$handle}")({
   component: HandlePage,
   head: ({ params }) => {
     const handle = params.handle;
-    const title = `@${handle}'s ATproto Wrapped`;
-    const description = `A year of everything @${handle} made across the ATmosphere — posts, likes, scrobbles, photos, the long-tail stuff.`;
+    const display = toDisplayHandle(handle);
+    const title = `@${display}'s ATproto Wrapped`;
+    const description = `A year of everything @${display} made across the ATmosphere — posts, likes, scrobbles, photos, the long-tail stuff.`;
     const origin = getOrigin();
     const ogImage = `${origin}/og/${encodeURIComponent(handle)}`;
     return {
