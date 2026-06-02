@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AtChar123handleChar125RouteImport } from './routes/@{$handle}'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OgIndexRouteImport } from './routes/og/index'
 import { Route as OgHandleRouteImport } from './routes/og/$handle'
 
 const AtChar123handleChar125Route = AtChar123handleChar125RouteImport.update({
@@ -23,6 +24,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OgIndexRoute = OgIndexRouteImport.update({
+  id: '/og/',
+  path: '/og/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OgHandleRoute = OgHandleRouteImport.update({
   id: '/og/$handle',
   path: '/og/$handle',
@@ -33,30 +39,34 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/@{$handle}': typeof AtChar123handleChar125Route
   '/og/$handle': typeof OgHandleRoute
+  '/og/': typeof OgIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/@{$handle}': typeof AtChar123handleChar125Route
   '/og/$handle': typeof OgHandleRoute
+  '/og': typeof OgIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/@{$handle}': typeof AtChar123handleChar125Route
   '/og/$handle': typeof OgHandleRoute
+  '/og/': typeof OgIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/@{$handle}' | '/og/$handle'
+  fullPaths: '/' | '/@{$handle}' | '/og/$handle' | '/og/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/@{$handle}' | '/og/$handle'
-  id: '__root__' | '/' | '/@{$handle}' | '/og/$handle'
+  to: '/' | '/@{$handle}' | '/og/$handle' | '/og'
+  id: '__root__' | '/' | '/@{$handle}' | '/og/$handle' | '/og/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AtChar123handleChar125Route: typeof AtChar123handleChar125Route
   OgHandleRoute: typeof OgHandleRoute
+  OgIndexRoute: typeof OgIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/og/': {
+      id: '/og/'
+      path: '/og'
+      fullPath: '/og/'
+      preLoaderRoute: typeof OgIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/og/$handle': {
       id: '/og/$handle'
       path: '/og/$handle'
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AtChar123handleChar125Route: AtChar123handleChar125Route,
   OgHandleRoute: OgHandleRoute,
+  OgIndexRoute: OgIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

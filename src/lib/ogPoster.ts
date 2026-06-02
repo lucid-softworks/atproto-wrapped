@@ -88,6 +88,103 @@ function buildMarqueeSpans(services: string[]): string {
   );
 }
 
+/**
+ * Static homepage poster — mirrors the landing-page hero ("A year of
+ * EVERYTHING YOU MADE in [word] wrapped.") with example service tiles, so
+ * sharing the bare site URL unfurls into something on-brand rather than
+ * nothing at all.
+ */
+export function buildHomeOgSvg(): string {
+  const W2 = W;
+  const H2 = H;
+  const marqueeH = 56;
+  const marqueeY = H2 - marqueeH;
+
+  // Example tiles match the hardcoded FloatingTiles values in
+  // src/components/Landing.tsx so the OG card "rhymes" with the landing page.
+  const exampleTiles: Array<{
+    tile: OgServiceTile;
+    theme: keyof typeof TILE_THEME;
+    pos: { x: number; y: number; rotate: number };
+  }> = [
+    {
+      tile: { label: "BLUESKY", count: 26230, word: "posts" },
+      theme: "cobalt",
+      pos: { x: 960, y: 150, rotate: 6 },
+    },
+    {
+      tile: { label: "TEALFM", count: 319, word: "plays" },
+      theme: "mint",
+      pos: { x: 905, y: 290, rotate: -4 },
+    },
+    {
+      tile: { label: "ROCKSKY", count: 386, word: "scrobbles" },
+      theme: "orange",
+      pos: { x: 980, y: 410, rotate: 3 },
+    },
+  ];
+  const tileW = 180;
+  const tileH = 120;
+  const tilesSvg = exampleTiles
+    .map((t) =>
+      floatingTile(t.pos.x, t.pos.y, tileW, tileH, t.pos.rotate, t.tile, t.theme),
+    )
+    .join("\n");
+
+  // Marquee with the curated service list from src/components/Landing.tsx.
+  const marqueeServices = [
+    "bluesky",
+    "rocksky",
+    "tealfm",
+    "whitewind",
+    "pinksea",
+    "frontpage",
+    "tangled",
+    "smokesignal",
+  ];
+  const marqueeSpans = buildMarqueeSpans(marqueeServices);
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W2}" height="${H2}" viewBox="0 0 ${W2} ${H2}">
+  <rect width="${W2}" height="${H2}" fill="#f1ead9" />
+
+  <!-- top bar -->
+  <g transform="translate(60 82)">
+    <circle cx="9" cy="0" r="9" fill="#ff4d97" />
+    <text x="28" y="6" font-family="JetBrains Mono, ui-monospace, monospace" font-size="18" font-weight="500" letter-spacing="2" fill="#0a0a0a">ATPROTO·WRAPPED</text>
+    <text x="${W2 - 120}" y="6" font-family="JetBrains Mono, ui-monospace, monospace" font-size="14" letter-spacing="3" fill="#0a0a0a" opacity="0.5" text-anchor="end">ISSUE 01 · THE ATMOSPHERE EDITION</text>
+  </g>
+  <line x1="60" y1="116" x2="${W2 - 60}" y2="116" stroke="#0a0a0a" stroke-opacity="0.15" stroke-width="2" />
+
+  <!-- eyebrow -->
+  <text x="60" y="184" font-family="Instrument Serif, Georgia, serif" font-style="italic" font-size="46" fill="#0a0a0a" opacity="0.7">A year of</text>
+
+  <!-- two-line shout: EVERYTHING / YOU MADE -->
+  <text x="60" y="290" font-family="Bricolage Grotesque, Arial Black, sans-serif" font-weight="800" font-size="104" letter-spacing="-3" fill="#0a0a0a">EVERYTHING</text>
+  <text x="60" y="394" font-family="Bricolage Grotesque, Arial Black, sans-serif" font-weight="800" font-size="104" letter-spacing="-3" fill="#0a0a0a">YOU MADE</text>
+
+  <!-- "in [word] wrapped." inline -->
+  <text x="60" y="476" font-family="Bricolage Grotesque, Arial Black, sans-serif" font-weight="800" font-size="56" letter-spacing="-1" fill="#0a0a0a">
+    <tspan opacity="0.5">in</tspan>
+    <tspan dx="14" font-family="Instrument Serif, Georgia, serif" font-style="italic" font-weight="400">posts</tspan>
+    <tspan dx="14" font-family="Instrument Serif, Georgia, serif" font-style="italic" font-weight="400">wrapped.</tspan>
+  </text>
+
+  <!-- subtitle -->
+  <text x="60" y="520" font-family="JetBrains Mono, ui-monospace, monospace" font-size="16" letter-spacing="1" fill="#0a0a0a" opacity="0.65">Drop a Bluesky handle for the full magazine.</text>
+
+  <!-- floating example tiles -->
+  ${tilesSvg}
+
+  <!-- marquee strip (matches Landing.tsx Marquee) -->
+  <rect x="0" y="${marqueeY}" width="${W2}" height="${marqueeH}" fill="#0a0a0a" />
+  ${
+    marqueeSpans
+      ? `<text x="60" y="${marqueeY + 35}" font-family="JetBrains Mono, ui-monospace, monospace" font-size="14" letter-spacing="3" fill="#f1ead9">${marqueeSpans}</text>`
+      : ""
+  }
+</svg>`;
+}
+
 export function buildOgPosterSvg(input: OgPosterInput): string {
   const handle = `@${input.handle}`;
   const handleSize = fitHandleSize(handle);

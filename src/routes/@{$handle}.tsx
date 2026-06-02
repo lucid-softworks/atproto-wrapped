@@ -56,6 +56,17 @@ function HandlePage() {
     if (query.data) window.scrollTo({ top: 0, behavior: "instant" });
   }, [query.data]);
 
+  // Cache-warm the per-handle OG image as soon as someone visits their wrap
+  // so the CF Cache entry is already hot if they share the link. Fire and
+  // forget — the worker generates + stores the PNG and we don't need the
+  // response here.
+  useEffect(() => {
+    if (typeof window === "undefined" || !handle) return;
+    fetch(`/og/${encodeURIComponent(handle)}`, { method: "GET" }).catch(
+      () => {},
+    );
+  }, [handle]);
+
   if (query.data) {
     return <Wrapped stats={query.data} />;
   }
