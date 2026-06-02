@@ -31,12 +31,25 @@ type RemoteEvent = {
   description?: string;
   startsAt: Date | null;
   mode?: string;
+  vodAtUri?: string;
 };
 
 function stripFragmentPrefix(value: string): string {
   const idx = value.indexOf("#");
   if (idx === -1) return value;
   return value.slice(idx + 1);
+}
+
+/**
+ * Build a Streamplace watch URL from an at:// URI pointing at a
+ * place.stream.video record. We mirror popfeed's URL convention
+ * (`/watch/at:/<did>/<collection>/<rkey>`) — if Streamplace uses a
+ * different pattern this is the one knob to turn.
+ */
+function vodWatchUrl(atUri: string): string | null {
+  if (!atUri.startsWith("at://")) return null;
+  const rest = atUri.slice("at://".length);
+  return `https://stream.place/watch/at:/${rest}`;
 }
 
 async function fetchEvents(uris: string[]): Promise<Map<string, RemoteEvent>> {
@@ -57,7 +70,14 @@ async function fetchEvents(uris: string[]): Promise<Map<string, RemoteEvent>> {
           : null;
       const modeRaw = typeof v.mode === "string" ? v.mode : undefined;
       const mode = modeRaw ? stripFragmentPrefix(modeRaw) : undefined;
-      out.set(uri, { name, description, startsAt, mode });
+      const additional = v.additionalData as
+        | Record<string, unknown>
+        | undefined;
+      const vodAtUri =
+        additional && typeof additional.vodAtUri === "string"
+          ? additional.vodAtUri
+          : undefined;
+      out.set(uri, { name, description, startsAt, mode, vodAtUri });
     }),
   );
   return out;
@@ -154,7 +174,7 @@ export function FeaturedCalendarSection({
                 >
                   <div className="font-bold leading-tight">{e.name}</div>
                   {e.description && (
-                    <p className="line-clamp-3 font-serif text-sm italic text-cream/80">
+                    <p className="line-clamp-3 text-sm text-cream/95">
                       {e.description}
                     </p>
                   )}
@@ -180,7 +200,7 @@ export function FeaturedCalendarSection({
                       </span>
                     )}
                   </div>
-                  {e.uris.length > 0 && (
+                  {(e.uris.length > 0 || e.vodAtUri) && (
                     <div className="mt-1 flex flex-wrap gap-2">
                       {e.uris.map((u, j) => (
                         <a
@@ -193,6 +213,22 @@ export function FeaturedCalendarSection({
                           {u.name ?? "Link"} ↗
                         </a>
                       ))}
+                      {e.vodAtUri &&
+                        (() => {
+                          const watchUrl = vodWatchUrl(e.vodAtUri);
+                          if (!watchUrl) return null;
+                          return (
+                            <a
+                              key="vod"
+                              href={watchUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="rounded-full border-2 border-wrap-yellow bg-wrap-yellow px-3 py-1 font-mono text-[10px] tracking-widest text-ink uppercase transition hover:bg-wrap-violet hover:text-wrap-yellow"
+                            >
+                              ▶ Watch VOD ↗
+                            </a>
+                          );
+                        })()}
                     </div>
                   )}
                 </li>
@@ -224,7 +260,7 @@ export function FeaturedCalendarSection({
                       </span>
                     </div>
                     {ev?.description && (
-                      <p className="line-clamp-2 font-serif text-sm italic text-cream/80">
+                      <p className="line-clamp-2 text-sm text-cream/95">
                         {ev.description}
                       </p>
                     )}
@@ -243,6 +279,21 @@ export function FeaturedCalendarSection({
                         </span>
                       )}
                     </div>
+                    {ev?.vodAtUri &&
+                      (() => {
+                        const watchUrl = vodWatchUrl(ev.vodAtUri);
+                        if (!watchUrl) return null;
+                        return (
+                          <a
+                            href={watchUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-1 inline-flex w-fit items-center rounded-full border-2 border-wrap-yellow bg-wrap-yellow px-3 py-1 font-mono text-[10px] tracking-widest text-ink uppercase transition hover:bg-wrap-violet hover:text-wrap-yellow"
+                          >
+                            ▶ Watch VOD ↗
+                          </a>
+                        );
+                      })()}
                   </li>
                 );
               })}

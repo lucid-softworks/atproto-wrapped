@@ -14,6 +14,7 @@ export type CalendarEvent = {
   endsAt: Date | null;
   timezone?: string;
   uris: CalendarEventLink[];
+  vodAtUri?: string;
   createdAt: Date | null;
   createdWith?: string;
 };
@@ -89,6 +90,12 @@ export function getCalendarHighlights(
 
     const modeRaw = strOrUndef(v.mode);
     const statusRaw = strOrUndef(v.status);
+    const additional = v.additionalData as
+      | Record<string, unknown>
+      | undefined;
+    const vodAtUri = additional
+      ? strOrUndef(additional.vodAtUri)
+      : undefined;
 
     return {
       name:
@@ -103,6 +110,7 @@ export function getCalendarHighlights(
       endsAt: parseDate(v.endsAt),
       timezone: strOrUndef(v.timezone),
       uris,
+      vodAtUri,
       createdAt: r.createdAt,
       createdWith: strOrUndef(v.createdWith),
     };
