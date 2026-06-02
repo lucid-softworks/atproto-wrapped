@@ -133,14 +133,20 @@ export const Route = createFileRoute("/og/$handle")({
           return new Response("invalid handle", { status: 400 });
         }
 
+        const requestUrl = new URL(request.url);
         const format =
-          new URL(request.url).searchParams.get("format") === "svg"
-            ? "svg"
-            : "png";
+          requestUrl.searchParams.get("format") === "svg" ? "svg" : "png";
 
+        // Canonicalize the cache key to (handle, format) so cache-busting
+        // query strings (?bust=…) and any other params don't blow out the
+        // cache, and so the PNG/SVG variants get visibly distinct slots.
         const cache = (globalThis as unknown as { caches?: WorkerCaches })
           .caches?.default;
-        const cacheKey = new Request(request.url, { method: "GET" });
+        const cacheUrl = new URL(
+          `/_og-cache/${encodeURIComponent(handle)}.${format}`,
+          requestUrl.origin,
+        );
+        const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
         if (cache) {
           const hit = await cache.match(cacheKey);
           if (hit) return hit;
