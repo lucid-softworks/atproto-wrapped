@@ -323,30 +323,43 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
     .sort((a, b) => b.count - a.count);
 
   // De-clumping: rebuild the order so no two adjacent sections share a
-  // theme color when avoidable. We walk through the activity-sorted list
-  // and at each step pick the first remaining item whose theme differs
-  // from the last placed item — biasing toward the original priority
-  // while breaking up monochrome runs. If only same-theme items are left
-  // we accept the adjacency rather than tank the order entirely.
-  const sorted = features;
-  const remaining = sorted.slice();
-  const placed: Feature[] = [];
-  while (remaining.length > 0) {
-    const last = placed[placed.length - 1];
-    let pickIdx = -1;
-    if (last) {
-      for (let i = 0; i < remaining.length; i++) {
-        if (remaining[i].theme !== last.theme) {
-          pickIdx = i;
-          break;
-        }
-      }
-    }
-    if (pickIdx === -1) pickIdx = 0;
-    placed.push(remaining[pickIdx]);
-    remaining.splice(pickIdx, 1);
+  // theme color when avoidable. Classic "reorganize" approach — group by
+  // theme, then at each step pull from the theme with the most remaining
+  // items (skipping the most-recently-placed theme so we never put two
+  // same-color sections back-to-back unless one theme has > half the
+  // items and adjacency is mathematically unavoidable).
+  const byTheme = new Map<string, Feature[]>();
+  for (const f of features) {
+    const arr = byTheme.get(f.theme) ?? [];
+    arr.push(f);
+    byTheme.set(f.theme, arr);
   }
-  const ordered = placed;
+  // Each group's items stay sorted by activity count (features was
+  // already sorted desc before grouping).
+  type Group = { theme: string; items: Feature[] };
+  const groups: Group[] = Array.from(byTheme.entries()).map(
+    ([theme, items]) => ({ theme, items }),
+  );
+  const ordered: Feature[] = [];
+  let lastTheme: string | null = null;
+  while (groups.length > 0) {
+    groups.sort((a, b) => {
+      // Largest group first; ties broken by highest-priority head item.
+      if (a.items.length !== b.items.length) {
+        return b.items.length - a.items.length;
+      }
+      return (b.items[0]?.count ?? 0) - (a.items[0]?.count ?? 0);
+    });
+    // Pick the first group whose theme differs from the last placed one;
+    // if everything left is the last theme, accept the forced adjacency.
+    let pick = groups.find((g) => g.theme !== lastTheme) ?? groups[0];
+    const item = pick.items.shift()!;
+    ordered.push(item);
+    lastTheme = item.theme;
+    if (pick.items.length === 0) {
+      groups.splice(groups.indexOf(pick), 1);
+    }
+  }
 
   async function onShare() {
     return shareWrappedUrl(stats.handle);
