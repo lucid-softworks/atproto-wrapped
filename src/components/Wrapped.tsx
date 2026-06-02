@@ -63,6 +63,9 @@ import { getNpmxHighlights } from "../lib/highlights/npmx";
 import { getMarqueHighlights } from "../lib/highlights/marque";
 import { getAtlasHighlights } from "../lib/highlights/atlas";
 import { getPollenHighlights } from "../lib/highlights/pollen";
+import { getAtmosHighlights } from "../lib/highlights/atmos";
+import { getAiConsentHighlights } from "../lib/highlights/aiConsent";
+import { getProtoimsgHighlights } from "../lib/highlights/protoimsg";
 import { StickyNav } from "./wrapped/Nav";
 import { IntroSlide } from "./wrapped/Intro";
 import { BigSlide } from "./wrapped/BigSlide";
@@ -126,6 +129,9 @@ import { FeaturedNpmxSection } from "./featured/Npmx";
 import { FeaturedMarqueSection } from "./featured/Marque";
 import { FeaturedAtlasSection } from "./featured/Atlas";
 import { FeaturedPollenSection } from "./featured/Pollen";
+import { FeaturedAtmosSection } from "./featured/Atmos";
+import { FeaturedAiConsentSection } from "./featured/AiConsent";
+import { FeaturedProtoimsgSection } from "./featured/Protoimsg";
 
 const TOP_SLIDES = 6;
 const BENTO_COUNT = 9;
@@ -228,6 +234,9 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
   const marque = getMarqueHighlights(stats.byCollection);
   const atlas = getAtlasHighlights(stats.byCollection);
   const pollen = getPollenHighlights(stats.byCollection);
+  const atmos = getAtmosHighlights(stats.byCollection);
+  const aiConsent = getAiConsentHighlights(stats.byCollection);
+  const protoimsg = getProtoimsgHighlights(stats.byCollection);
 
   // Build the spotlight list — each entry is a featured section that only
   // appears when its highlight is non-null. We then sort by how many records
@@ -298,6 +307,9 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
     { key: "marque", show: !!marque, prefixes: ["at.marque."], node: marque && <FeaturedMarqueSection data={marque} /> },
     { key: "atlas", show: !!atlas, prefixes: ["city.atlas."], node: atlas && <FeaturedAtlasSection data={atlas} /> },
     { key: "pollen", show: !!pollen, prefixes: ["place.pollen."], node: pollen && <FeaturedPollenSection data={pollen} /> },
+    { key: "atmos", show: !!atmos, prefixes: ["email.atmos."], node: atmos && <FeaturedAtmosSection data={atmos} /> },
+    { key: "aiConsent", show: !!aiConsent, prefixes: ["community.lexicon.preference."], node: aiConsent && <FeaturedAiConsentSection data={aiConsent} /> },
+    { key: "protoimsg", show: !!protoimsg, prefixes: ["app.protoimsg."], node: protoimsg && <FeaturedProtoimsgSection data={protoimsg} /> },
   ];
   const features: Feature[] = candidates
     .filter((c) => c.show && c.node)

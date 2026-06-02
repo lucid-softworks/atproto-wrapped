@@ -56,7 +56,7 @@ function ReviewCard({
   review: PopfeedHighlights["reviews"][number];
   handle: string;
 }) {
-  const href = `https://popfeed.app/profile/${handle}/review/${review.rkey}`;
+  const href = `https://popfeed.social/profile/${handle}/review/${review.rkey}`;
   return (
     <a
       href={href}

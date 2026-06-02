@@ -119,6 +119,12 @@ export const FEATURED_NSID_PREFIXES: string[] = [
   "city.atlas.",
   // pollen social
   "place.pollen.",
+  // atmos email attestation
+  "email.atmos.",
+  // community lexicon AI prefs (calendar prefix above already covers calendar)
+  "community.lexicon.preference.",
+  // protoimsg chat / community
+  "app.protoimsg.",
 ];
 
 /**
