@@ -135,6 +135,20 @@ import { FeaturedKeytraceSection } from "./featured/Keytrace";
 
 type Bucket = { nsid: string; count: number };
 
+// Position-based cycling separator strips between spotlights, so even when
+// two sections share a theme color the page still reads as alternating.
+const SPOTLIGHT_DIVIDER_COLORS = [
+  "bg-wrap-pink",
+  "bg-wrap-violet",
+  "bg-wrap-lime",
+  "bg-wrap-orange",
+  "bg-wrap-cyan",
+  "bg-wrap-yellow",
+  "bg-wrap-mint",
+  "bg-wrap-red",
+  "bg-wrap-cobalt",
+] as const;
+
 function countForPrefixes(buckets: Bucket[], prefixes: string[]): number {
   let sum = 0;
   for (const b of buckets) {
@@ -369,8 +383,16 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
     <div className="min-h-svh bg-cream text-ink">
       <StickyNav handle={stats.handle} onShare={onShare} />
       <IntroSlide stats={stats} topServices={topServices} onShare={onShare} />
-      {ordered.map((f) => (
-        <Fragment key={f.key}>{f.node}</Fragment>
+      {ordered.map((f, i) => (
+        <Fragment key={f.key}>
+          {i > 0 && (
+            <div
+              aria-hidden
+              className={`h-3 border-b-2 border-ink ${SPOTLIGHT_DIVIDER_COLORS[i % SPOTLIGHT_DIVIDER_COLORS.length]}`}
+            />
+          )}
+          {f.node}
+        </Fragment>
       ))}
       {tail.length > 0 && <TailSection items={tail} />}
       <FooterStrip stats={stats} />
