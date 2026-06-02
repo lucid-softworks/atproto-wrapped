@@ -4,62 +4,38 @@ import type {
   SidetrailStop,
   SidetrailTrail,
 } from "../../lib/highlights/sidetrail";
+import { fetchRecordByUri, parseAtUri } from "../../lib/highlights/_atUri";
 import { FeaturedRow } from "./_shared";
 
-const PUBLIC_APPVIEW = "https://public.api.bsky.app";
 const MAX_REFERENCED_TRAILS = 6;
 
 function strOrUndef(v: unknown): string | undefined {
   return typeof v === "string" && v.length > 0 ? v : undefined;
 }
 
-function parseAtUri(
-  uri: string,
-): { did: string; collection: string; rkey: string } | null {
-  if (!uri.startsWith("at://")) return null;
-  const rest = uri.slice("at://".length);
-  const parts = rest.split("/");
-  if (parts.length < 3) return null;
-  return { did: parts[0], collection: parts[1], rkey: parts.slice(2).join("/") };
-}
-
 async function fetchTrail(uri: string): Promise<SidetrailTrail | null> {
   const parsed = parseAtUri(uri);
   if (!parsed) return null;
-  const url = `${PUBLIC_APPVIEW}/xrpc/com.atproto.repo.getRecord?repo=${encodeURIComponent(
-    parsed.did,
-  )}&collection=${encodeURIComponent(
-    parsed.collection,
-  )}&rkey=${encodeURIComponent(parsed.rkey)}`;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const data = (await res.json()) as {
-      uri?: string;
-      value?: Record<string, unknown>;
+  const value = await fetchRecordByUri<Record<string, unknown>>(uri);
+  if (!value) return null;
+  const rawStops = Array.isArray(value.stops) ? value.stops : [];
+  const stops: SidetrailStop[] = rawStops.map((s) => {
+    if (!s || typeof s !== "object") return {};
+    const so = s as Record<string, unknown>;
+    return {
+      tid: strOrUndef(so.tid),
+      title: strOrUndef(so.title),
+      content: strOrUndef(so.content),
+      buttonText: strOrUndef(so.buttonText),
     };
-    const value = data.value ?? {};
-    const rawStops = Array.isArray(value.stops) ? value.stops : [];
-    const stops: SidetrailStop[] = rawStops.map((s) => {
-      if (!s || typeof s !== "object") return {};
-      const so = s as Record<string, unknown>;
-      return {
-        tid: strOrUndef(so.tid),
-        title: strOrUndef(so.title),
-        content: strOrUndef(so.content),
-        buttonText: strOrUndef(so.buttonText),
-      };
-    });
-    const createdAtRaw = value.createdAt;
-    let createdAt: Date | null = null;
-    if (typeof createdAtRaw === "string") {
-      const t = Date.parse(createdAtRaw);
-      if (!Number.isNaN(t)) createdAt = new Date(t);
-    }
-    return { uri, rkey: parsed.rkey, stops, createdAt };
-  } catch {
-    return null;
+  });
+  const createdAtRaw = value.createdAt;
+  let createdAt: Date | null = null;
+  if (typeof createdAtRaw === "string") {
+    const t = Date.parse(createdAtRaw);
+    if (!Number.isNaN(t)) createdAt = new Date(t);
   }
+  return { uri, rkey: parsed.rkey, stops, createdAt };
 }
 
 async function fetchTrails(uris: string[]): Promise<SidetrailTrail[]> {

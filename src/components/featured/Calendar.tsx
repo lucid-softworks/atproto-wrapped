@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { CalendarHighlights } from "../../lib/highlights/calendar";
+import { fetchRecordByUri } from "../../lib/highlights/_atUri";
 
 function formatDateTime(d: Date): string {
   return d.toLocaleString(undefined, {
@@ -42,37 +43,21 @@ async function fetchEvents(uris: string[]): Promise<Map<string, RemoteEvent>> {
   const out = new Map<string, RemoteEvent>();
   await Promise.all(
     uris.map(async (uri) => {
-      if (!uri.startsWith("at://")) return;
-      const rest = uri.slice("at://".length);
-      const parts = rest.split("/");
-      const did = parts[0];
-      const collection = parts[1];
-      const rkey = parts[2];
-      if (!did || !collection || !rkey) return;
-      const url = `https://public.api.bsky.app/xrpc/com.atproto.repo.getRecord?repo=${encodeURIComponent(did)}&collection=${encodeURIComponent(collection)}&rkey=${encodeURIComponent(rkey)}`;
-      try {
-        const res = await fetch(url);
-        if (!res.ok) return;
-        const data = (await res.json()) as {
-          value?: Record<string, unknown>;
-        };
-        const v = data.value ?? {};
-        const name =
-          (typeof v.name === "string" && v.name) ||
-          (typeof v.title === "string" && v.title) ||
-          "Untitled event";
-        const description =
-          typeof v.description === "string" ? v.description : undefined;
-        const startsAt =
-          typeof v.startsAt === "string"
-            ? new Date(Date.parse(v.startsAt))
-            : null;
-        const modeRaw = typeof v.mode === "string" ? v.mode : undefined;
-        const mode = modeRaw ? stripFragmentPrefix(modeRaw) : undefined;
-        out.set(uri, { name, description, startsAt, mode });
-      } catch {
-        // best effort
-      }
+      const v = await fetchRecordByUri<Record<string, unknown>>(uri);
+      if (!v) return;
+      const name =
+        (typeof v.name === "string" && v.name) ||
+        (typeof v.title === "string" && v.title) ||
+        "Untitled event";
+      const description =
+        typeof v.description === "string" ? v.description : undefined;
+      const startsAt =
+        typeof v.startsAt === "string"
+          ? new Date(Date.parse(v.startsAt))
+          : null;
+      const modeRaw = typeof v.mode === "string" ? v.mode : undefined;
+      const mode = modeRaw ? stripFragmentPrefix(modeRaw) : undefined;
+      out.set(uri, { name, description, startsAt, mode });
     }),
   );
   return out;
