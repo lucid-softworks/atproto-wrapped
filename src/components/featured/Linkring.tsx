@@ -111,6 +111,34 @@ export function FeaturedLinkringSection({
             </ul>
           </div>
         )}
+
+        {data.externals.length > 0 && (
+          <div className="mt-12">
+            <FeaturedRow label="Link-in-bio pages" />
+            <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+              {data.externals.map((x) => (
+                <li
+                  key={x.uri}
+                  className="rounded-xl border-2 border-ink bg-cream p-3"
+                >
+                  <div className="flex items-baseline justify-between gap-2">
+                    <div className="line-clamp-1 font-semibold leading-tight">
+                      {x.title ?? "Link page"}
+                    </div>
+                    <span className="shrink-0 rounded-full border border-ink/40 px-1.5 py-0.5 font-mono text-[10px] tracking-widest opacity-65 uppercase">
+                      {x.source}
+                    </span>
+                  </div>
+                  {x.description && (
+                    <p className="mt-1 line-clamp-2 font-serif text-sm italic opacity-75">
+                      {x.description}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </section>
   );

@@ -20,11 +20,20 @@ export type LinkringList = {
   createdAt: Date | null;
 };
 
+export type LinkringExternal = {
+  uri: string;
+  source: string;
+  title?: string;
+  description?: string;
+  createdAt: Date | null;
+};
+
 export type LinkringHighlights = {
   totalRings: number;
   totalLists: number;
   rings: LinkringRing[];
   lists: LinkringList[];
+  externals: LinkringExternal[];
 };
 
 function strOrNull(v: unknown): string | null {
@@ -42,8 +51,16 @@ export function getLinkringHighlights(
     byCollection.get("lol.linkring.webring.ring") ?? [];
   const listRecords =
     byCollection.get("lol.linkring.linklist.list") ?? [];
+  const linknaRecords = byCollection.get("me.linkna.linkinbio") ?? [];
+  const wooshRecords = byCollection.get("link.woosh.linkPage") ?? [];
 
-  if (ringRecords.length === 0 && listRecords.length === 0) return null;
+  if (
+    ringRecords.length === 0 &&
+    listRecords.length === 0 &&
+    linknaRecords.length === 0 &&
+    wooshRecords.length === 0
+  )
+    return null;
 
   const rings: LinkringRing[] = ringRecords.map((r) => {
     const v = r.value;
@@ -79,10 +96,32 @@ export function getLinkringHighlights(
       (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0),
   );
 
+  const externals: LinkringExternal[] = [
+    ...linknaRecords.map((r) => ({
+      uri: r.uri,
+      source: "linkna",
+      title: strOrUndef(r.value.title) ?? strOrUndef(r.value.name),
+      description: strOrUndef(r.value.description) ?? strOrUndef(r.value.bio),
+      createdAt: r.createdAt,
+    })),
+    ...wooshRecords.map((r) => ({
+      uri: r.uri,
+      source: "woosh",
+      title: strOrUndef(r.value.title) ?? strOrUndef(r.value.name),
+      description: strOrUndef(r.value.description),
+      createdAt: r.createdAt,
+    })),
+  ];
+  externals.sort(
+    (a, b) =>
+      (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0),
+  );
+
   return {
     totalRings: ringRecords.length,
     totalLists: listRecords.length,
     rings,
     lists,
+    externals,
   };
 }

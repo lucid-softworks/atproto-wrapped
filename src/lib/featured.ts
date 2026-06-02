@@ -140,6 +140,17 @@ export const FEATURED_NSID_PREFIXES: string[] = [
   "app.blento.",
   // tech.waow slide decks
   "tech.waow.slides.",
+  // community lexicon badges (alt issuer for the Badges spotlight)
+  "community.lexicon.badge.",
+  // alt link-in-bio services (folded into the Linkring spotlight)
+  "me.linkna.",
+  "link.woosh.",
+  // reddwarf poll embeds (folded into the Tokimeki Polls spotlight)
+  "app.reddwarf.embed.poll",
+  // alt long-form publications (folded into Reading)
+  "app.greengale.publication",
+  "app.offprint.publication",
+  "blog.pckt.",
 ];
 
 /**
@@ -1476,6 +1487,11 @@ export function getReadingHighlights(
   const annotations = byCollection.get("at.margin.annotation") ?? [];
   const monomarks = byCollection.get("at.monomarks.bookmark") ?? [];
   const skylights = byCollection.get("my.skylights.rel") ?? [];
+  // Alternate publication services — same "long-form writing" bucket
+  const greengale = byCollection.get("app.greengale.publication") ?? [];
+  const offprint = byCollection.get("app.offprint.publication") ?? [];
+  const pcktDocs = byCollection.get("blog.pckt.document") ?? [];
+  const pcktPubs = byCollection.get("blog.pckt.publication") ?? [];
 
   const total =
     blogs.length +
@@ -1484,7 +1500,11 @@ export function getReadingHighlights(
     marginBookmarks.length +
     annotations.length +
     monomarks.length +
-    skylights.length;
+    skylights.length +
+    greengale.length +
+    offprint.length +
+    pcktDocs.length +
+    pcktPubs.length;
   if (total === 0) return null;
 
   const items: ReadingItem[] = [];
@@ -1517,6 +1537,20 @@ export function getReadingHighlights(
     items.push({
       kind: "leaflet",
       title: strOrNull(v.title) ?? "Leaflet document",
+      excerpt: strOrUndef(v.description) ?? strOrUndef(v.subtitle),
+      createdAt: r.createdAt,
+    });
+  }
+
+  for (const r of [...greengale, ...offprint, ...pcktDocs, ...pcktPubs]) {
+    const v = r.value;
+    items.push({
+      kind: "leaflet",
+      title:
+        strOrNull(v.title) ??
+        strOrNull(v.name) ??
+        strOrNull(v.subject) ??
+        "Publication",
       excerpt: strOrUndef(v.description) ?? strOrUndef(v.subtitle),
       createdAt: r.createdAt,
     });
@@ -1568,7 +1602,12 @@ export function getReadingHighlights(
   return {
     blogsWritten: blogs.length,
     booksLogged: books.length,
-    leafletDocs: leaflets.length,
+    leafletDocs:
+      leaflets.length +
+      greengale.length +
+      offprint.length +
+      pcktDocs.length +
+      pcktPubs.length,
     bookmarks: marginBookmarks.length + monomarks.length,
     annotations: annotations.length,
     skylights: skylights.length,

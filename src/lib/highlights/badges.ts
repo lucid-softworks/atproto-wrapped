@@ -36,6 +36,7 @@ export function getBadgesHighlights(
   const collected = [
     ...(stats.byCollection.get("blue.badge.collection") ?? []),
     ...(stats.byCollection.get("blue.badge.award") ?? []),
+    ...(stats.byCollection.get("community.lexicon.badge.award") ?? []),
   ];
   if (collected.length === 0) return null;
 

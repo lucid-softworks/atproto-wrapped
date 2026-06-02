@@ -25,7 +25,10 @@ function parseDate(v: unknown): Date | null {
 export function getTokimekiPollsHighlights(
   byCollection: Map<string, RepoRecord[]>,
 ): TokimekiPollsHighlights | null {
-  const records = byCollection.get("tech.tokimeki.poll.poll") ?? [];
+  const records = [
+    ...(byCollection.get("tech.tokimeki.poll.poll") ?? []),
+    ...(byCollection.get("app.reddwarf.embed.poll") ?? []),
+  ];
   if (records.length === 0) return null;
 
   const polls: TokimekiPoll[] = records.map((r) => {
