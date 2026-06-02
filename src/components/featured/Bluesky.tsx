@@ -1,5 +1,5 @@
 import type { BlueskyHighlights } from "../../lib/featured";
-import { shortenDid } from "../../lib/format";
+import { compactNumber } from "../../lib/format";
 
 const BSKY_HERO_THEME: Record<
   BlueskyHighlights["hero"][number]["theme"],
@@ -48,7 +48,7 @@ export function FeaturedBlueskySection({ data }: { data: BlueskyHighlights }) {
                     {h.label}
                   </div>
                   <div className="mt-3 text-[clamp(2.5rem,8vw,5rem)] leading-[0.85] font-bold tracking-[-0.04em] tabular-nums">
-                    {h.count.toLocaleString()}
+                    {compactNumber(h.count)}
                   </div>
                 </div>
               );
@@ -91,7 +91,7 @@ export function FeaturedBlueskySection({ data }: { data: BlueskyHighlights }) {
             </div>
             <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {data.verifiedRecent.map((v, i) => {
-                const display = v.displayName ?? v.handle ?? shortenDid(v.did);
+                const display = v.displayName ?? v.handle ?? v.did;
                 const profileHref = v.handle
                   ? `https://bsky.app/profile/${v.handle}`
                   : `https://bsky.app/profile/${v.did}`;

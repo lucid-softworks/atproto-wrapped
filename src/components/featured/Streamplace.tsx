@@ -1,6 +1,6 @@
 import type { StreamplaceHighlights } from "../../lib/featured";
 import { FeaturedRow } from "./_shared";
-import { relativeDate, shortenDid } from "../../lib/format";
+import { relativeDate } from "../../lib/format";
 
 export function FeaturedStreamplaceSection({
   data,
@@ -91,7 +91,7 @@ export function FeaturedStreamplaceSection({
                 >
                   <p className="font-serif text-base italic">"{c.text}"</p>
                   <div className="mt-2 font-mono text-[10px] tracking-wide opacity-55">
-                    in @{shortenDid(c.streamer)}'s stream
+                    in {c.streamer}'s stream
                     {c.createdAt && ` · ${relativeDate(c.createdAt)}`}
                   </div>
                 </li>

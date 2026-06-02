@@ -1,9 +1,3 @@
-export function shortenDid(did: string): string {
-  if (did.startsWith("did:plc:")) return did.slice("did:plc:".length, 12);
-  if (did.startsWith("did:web:")) return did.slice("did:web:".length);
-  return did;
-}
-
 export function relativeDate(d: Date): string {
   const seconds = Math.round((Date.now() - d.getTime()) / 1000);
   if (seconds < 60) return "just now";
@@ -22,4 +16,14 @@ export function initial(name: string): string {
   const trimmed = name.trim();
   if (!trimmed) return "?";
   return trimmed[0].toUpperCase();
+}
+
+const COMPACT_FORMATTER = new Intl.NumberFormat("en", {
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
+/** 89888 → "89.9K", 150000 → "150K", 1500000 → "1.5M" */
+export function compactNumber(n: number): string {
+  return COMPACT_FORMATTER.format(n);
 }
