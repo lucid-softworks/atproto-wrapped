@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createIsomorphicFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { useQuery } from "@tanstack/react-query";
 import {
   fetchRepoStats,
@@ -9,13 +11,27 @@ import {
 import { Landing } from "../components/Landing";
 import { Wrapped } from "../components/Wrapped";
 
+// OG crawlers (Twitter, Facebook, etc.) require absolute URLs in og:image.
+// Compute the page origin server-side from the request; on the client we
+// can fall back to window.location.origin for client-side navigations.
+const getOrigin = createIsomorphicFn()
+  .server(() => {
+    try {
+      return new URL(getRequest().url).origin;
+    } catch {
+      return "";
+    }
+  })
+  .client(() => window.location.origin);
+
 export const Route = createFileRoute("/@{$handle}")({
   component: HandlePage,
   head: ({ params }) => {
     const handle = params.handle;
     const title = `@${handle}'s ATproto Wrapped`;
     const description = `A year of everything @${handle} made across the ATmosphere — posts, likes, scrobbles, photos, the long-tail stuff.`;
-    const ogImage = `/og/${encodeURIComponent(handle)}`;
+    const origin = getOrigin();
+    const ogImage = `${origin}/og/${encodeURIComponent(handle)}`;
     return {
       meta: [
         { title },
