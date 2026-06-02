@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import type {
   AtRoomHighlights,
   AtRoomObject,
@@ -25,6 +26,15 @@ export function FeaturedAtRoomSection({
 }: {
   data: AtRoomHighlights;
 }) {
+  // Dynamically register the <model-viewer> custom element only when we
+  // actually have AtRoom objects to render. The library is ~1MB so we
+  // keep it off the critical path.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (data.objects.length === 0) return;
+    void import("@google/model-viewer").catch(() => {});
+  }, [data.objects.length]);
+
   const total = data.totalObjects + data.totalLayouts;
 
   return (
@@ -150,13 +160,35 @@ function ObjectCard({
       ? `${(object.modelSize / 1024).toFixed(1)} KB`
       : undefined;
   return (
-    <figure className="flex flex-col gap-2 rounded-2xl border-2 border-ink bg-cream p-4">
+    <figure className="flex flex-col gap-2 rounded-2xl border-2 border-ink bg-cream p-3">
       <div className="flex items-baseline justify-between gap-2 font-mono text-[10px] tracking-widest text-ink/55 uppercase">
         <span>Object</span>
         {kb && <span className="opacity-65 tabular-nums">{kb}</span>}
       </div>
+      {object.modelUrl ? (
+        <div className="aspect-square overflow-hidden rounded-xl border border-ink/30 bg-cream-dark">
+          <model-viewer
+            src={object.modelUrl}
+            alt={object.name}
+            camera-controls
+            auto-rotate
+            interaction-prompt="none"
+            shadow-intensity="0.6"
+            exposure="1"
+            loading="lazy"
+            reveal="auto"
+            style={{
+              width: "100%",
+              height: "100%",
+              backgroundColor: "transparent",
+            }}
+          />
+        </div>
+      ) : (
+        <div className="aspect-square rounded-xl border border-dashed border-ink/30 bg-cream-dark" />
+      )}
       <figcaption className="space-y-1">
-        <div className="line-clamp-2 text-2xl font-bold leading-tight tracking-[-0.02em]">
+        <div className="line-clamp-2 text-base font-bold leading-tight tracking-[-0.01em]">
           {object.name}
         </div>
         {altPick && (
@@ -168,16 +200,6 @@ function ObjectCard({
           </div>
         )}
       </figcaption>
-      {object.modelUrl && (
-        <a
-          href={object.modelUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-1 inline-flex w-fit items-center rounded-full border-2 border-ink bg-ink px-3 py-1 font-mono text-[10px] tracking-widest text-cream uppercase hover:bg-cream hover:text-ink"
-        >
-          ⌘ glTF ↗
-        </a>
-      )}
     </figure>
   );
 }
