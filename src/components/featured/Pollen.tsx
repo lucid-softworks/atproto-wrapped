@@ -1,4 +1,11 @@
+import { useQuery } from "@tanstack/react-query";
 import type { PollenHighlights } from "../../lib/highlights/pollen";
+import {
+  fetchRecordByUri,
+  parseAtUri,
+} from "../../lib/highlights/_atUri";
+import { resolveHandlesForDids } from "../../lib/bskyProfiles";
+import { toDisplayHandle } from "../../lib/handle";
 import { FeaturedRow } from "./_shared";
 
 const REACTION_EMOJI: Record<string, string> = {
@@ -16,33 +23,88 @@ function reactionEmoji(type: string): string {
 }
 
 function pluralizeReaction(type: string, n: number): string {
-  // Naïve: most types get an "s" suffix, "heart" → "hearts".
   if (n === 1) return type;
   return type.endsWith("s") ? type : `${type}s`;
 }
 
-function parseAtUri(
-  uri: string,
-): { collection: string; rkey: string } | null {
-  // at://did:plc:xxx/<collection>/<rkey>
-  if (!uri.startsWith("at://")) return null;
-  const rest = uri.slice("at://".length);
-  const parts = rest.split("/");
-  if (parts.length < 3) return null;
-  return { collection: parts[1], rkey: parts.slice(2).join("/") };
+type RemotePollenPost = {
+  kind: "text" | "image" | "todo" | "other";
+  text?: string;
+  title?: string;
+  did: string;
+};
+
+async function fetchPollenPosts(
+  uris: string[],
+): Promise<Map<string, RemotePollenPost>> {
+  const out = new Map<string, RemotePollenPost>();
+  await Promise.all(
+    uris.map(async (uri) => {
+      const parsed = parseAtUri(uri);
+      if (!parsed) return;
+      const v = await fetchRecordByUri<Record<string, unknown>>(uri);
+      if (!v) return;
+      const post: RemotePollenPost = { kind: "other", did: parsed.did };
+      if (parsed.collection.endsWith("post.text")) {
+        post.kind = "text";
+        if (typeof v.text === "string") post.text = v.text;
+      } else if (parsed.collection.endsWith("post.image")) {
+        post.kind = "image";
+        if (typeof v.alt === "string") post.text = v.alt;
+        else if (typeof v.caption === "string") post.text = v.caption;
+      } else if (parsed.collection.endsWith("post.todo")) {
+        post.kind = "todo";
+        if (typeof v.title === "string") post.title = v.title;
+      }
+      out.set(uri, post);
+    }),
+  );
+  return out;
 }
 
-function shortCollection(c: string): string {
-  // Show the last meaningful chunk so "place.pollen.post.image" becomes "post.image".
-  const parts = c.split(".");
-  if (parts.length <= 2) return c;
-  return parts.slice(-2).join(".");
+function kindLabel(kind: RemotePollenPost["kind"]): string {
+  switch (kind) {
+    case "text":
+      return "post";
+    case "image":
+      return "photo";
+    case "todo":
+      return "todo";
+    default:
+      return "post";
+  }
 }
 
 export function FeaturedPollenSection({ data }: { data: PollenHighlights }) {
   const reactionEntries = Array.from(data.reactionsByType.entries()).sort(
     (a, b) => b[1] - a[1],
   );
+
+  const subjectUris = Array.from(
+    new Set(
+      data.recentReactions
+        .map((r) => r.subject)
+        .filter((s): s is string => !!s),
+    ),
+  );
+  const postsQuery = useQuery({
+    queryKey: ["pollen-reaction-posts", subjectUris],
+    queryFn: () => fetchPollenPosts(subjectUris),
+    enabled: subjectUris.length > 0,
+    staleTime: 1000 * 60 * 60,
+  });
+  const posts = postsQuery.data ?? new Map<string, RemotePollenPost>();
+
+  const authorDids = Array.from(
+    new Set(Array.from(posts.values()).map((p) => p.did)),
+  );
+  const authorsQuery = useQuery({
+    queryKey: ["pollen-reaction-authors", authorDids],
+    queryFn: () => resolveHandlesForDids(authorDids),
+    enabled: authorDids.length > 0,
+    staleTime: 1000 * 60 * 60,
+  });
+  const handles = authorsQuery.data ?? new Map<string, string>();
 
   return (
     <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-lime text-ink">
@@ -143,7 +205,9 @@ export function FeaturedPollenSection({ data }: { data: PollenHighlights }) {
                               aria-hidden
                               className={
                                 "mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-ink " +
-                                (it.completed ? "bg-ink text-cream" : "bg-cream")
+                                (it.completed
+                                  ? "bg-ink text-cream"
+                                  : "bg-cream")
                               }
                             >
                               {it.completed ? "✓" : ""}
@@ -176,42 +240,61 @@ export function FeaturedPollenSection({ data }: { data: PollenHighlights }) {
         {data.recentReactions.length > 0 && (
           <div className="mt-12">
             <FeaturedRow label="Recent reactions" />
-            <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
               {data.recentReactions.map((r, i) => {
-                const parsed = r.subject ? parseAtUri(r.subject) : null;
+                const post = r.subject ? posts.get(r.subject) : null;
+                const handle = post ? handles.get(post.did) : undefined;
+                const author = handle
+                  ? `@${toDisplayHandle(handle)}`
+                  : post?.did;
+                const body =
+                  post?.text ??
+                  post?.title ??
+                  (postsQuery.isLoading ? "Loading…" : "");
                 return (
                   <li
                     key={i}
-                    className="flex items-center gap-3 rounded-xl border-2 border-ink bg-cream px-3 py-2 font-mono text-xs"
+                    className="flex gap-3 rounded-2xl border-2 border-ink bg-cream p-4"
                   >
                     <span
                       aria-hidden
-                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-wrap-lime text-sm"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-wrap-lime text-base"
                     >
                       {reactionEmoji(r.reactionType)}
                     </span>
-                    <div className="min-w-0 flex-1 truncate">
-                      {parsed ? (
-                        <>
-                          <span className="opacity-55">
-                            {shortCollection(parsed.collection)}/
-                          </span>
-                          <span>{parsed.rkey}</span>
-                        </>
-                      ) : (
-                        <span className="opacity-55">
-                          {r.subject ?? "(no subject)"}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline gap-2 font-mono text-[11px]">
+                        <span className="font-semibold">
+                          {r.reactionType}
                         </span>
+                        <span className="opacity-55">·</span>
+                        {post && (
+                          <>
+                            <span className="opacity-70">
+                              {kindLabel(post.kind)} by
+                            </span>
+                            <span className="truncate font-semibold">
+                              {author}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      {body && (
+                        <p className="mt-1 line-clamp-3 text-sm leading-snug">
+                          {body}
+                        </p>
+                      )}
+                      {r.createdAt && (
+                        <div className="mt-2 font-mono text-[10px] opacity-55">
+                          reacted{" "}
+                          {r.createdAt.toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </div>
                       )}
                     </div>
-                    {r.createdAt && (
-                      <span className="text-[10px] opacity-55">
-                        {r.createdAt.toLocaleDateString(undefined, {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                    )}
                   </li>
                 );
               })}
