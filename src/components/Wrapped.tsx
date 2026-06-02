@@ -68,8 +68,6 @@ import { getAiConsentHighlights } from "../lib/highlights/aiConsent";
 import { getProtoimsgHighlights } from "../lib/highlights/protoimsg";
 import { StickyNav } from "./wrapped/Nav";
 import { IntroSlide } from "./wrapped/Intro";
-import { BigSlide } from "./wrapped/BigSlide";
-import { BentoSection } from "./wrapped/Bento";
 import { TailSection } from "./wrapped/Tail";
 import { FooterStrip } from "./wrapped/Footer";
 import { FeaturedBlueskySection } from "./featured/Bluesky";
@@ -133,9 +131,6 @@ import { FeaturedAtmosSection } from "./featured/Atmos";
 import { FeaturedAiConsentSection } from "./featured/AiConsent";
 import { FeaturedProtoimsgSection } from "./featured/Protoimsg";
 
-const TOP_SLIDES = 6;
-const BENTO_COUNT = 9;
-
 type Bucket = { nsid: string; count: number };
 
 function countForPrefixes(buckets: Bucket[], prefixes: string[]): number {
@@ -154,16 +149,15 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
     })
     .sort((a, b) => b.count - a.count);
 
-  // Anything featured OR explicitly skipped (protocol/declaration noise like
-  // com.germnetwork.keyPackage) is removed from the supporting-cast bento
-  // and the long-tail list.
-  const buckets = allBuckets.filter(
+  // Anything featured OR explicitly skipped (protocol/declaration noise
+  // like com.germnetwork.keyPackage) is removed from the long-tail list.
+  // Everything else lands in the long-tail — we don't render the auto-
+  // generated "You created N Xs on Y" big slides or bento cards anymore
+  // because the auto-pluralization ("statuss", "ais", "communitys") looks
+  // bad and the data isn't rich enough to warrant a hero treatment.
+  const tail = allBuckets.filter(
     (b) => !isFeaturedNsid(b.nsid) && !isSkippedNsid(b.nsid),
   );
-
-  const topSlides = buckets.slice(0, TOP_SLIDES);
-  const bento = buckets.slice(TOP_SLIDES, TOP_SLIDES + BENTO_COUNT);
-  const tail = buckets.slice(TOP_SLIDES + BENTO_COUNT);
 
   const services = new Map<string, number>();
   for (const b of allBuckets) {
@@ -331,17 +325,6 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
       {features.map((f) => (
         <Fragment key={f.key}>{f.node}</Fragment>
       ))}
-      {topSlides.map((b, i) => (
-        <BigSlide
-          key={b.nsid}
-          index={i + 1}
-          total={topSlides.length}
-          nsid={b.nsid}
-          count={b.count}
-          descriptor={b.descriptor}
-        />
-      ))}
-      {bento.length > 0 && <BentoSection items={bento} />}
       {tail.length > 0 && <TailSection items={tail} />}
       <FooterStrip stats={stats} />
     </div>
