@@ -1,3 +1,4 @@
+import { Fragment, type ReactNode } from "react";
 import type { RepoStats } from "../lib/atproto";
 import { describeCollection } from "../lib/labels";
 import { shareWrappedUrl } from "../lib/shareUrl";
@@ -26,8 +27,8 @@ import {
   getTangledHighlights,
   getYouAndMeHighlights,
   isFeaturedNsid,
+  isSkippedNsid,
 } from "../lib/featured";
-// New highlight extractors (one per service, in src/lib/highlights/)
 import { getHighFiveHighlights } from "../lib/highlights/highFive";
 import { getAtVouchHighlights } from "../lib/highlights/atvouch";
 import { getAtPokeHighlights } from "../lib/highlights/atpoke";
@@ -56,6 +57,12 @@ import { getStandardDocsHighlights } from "../lib/highlights/standardDocs";
 import { getWispHighlights } from "../lib/highlights/wisp";
 import { getVibeMealHighlights } from "../lib/highlights/vibeMeal";
 import { getAtStoreHighlights } from "../lib/highlights/atstore";
+import { getBrewsHighlights } from "../lib/highlights/brews";
+import { getCalendarHighlights } from "../lib/highlights/calendar";
+import { getNpmxHighlights } from "../lib/highlights/npmx";
+import { getMarqueHighlights } from "../lib/highlights/marque";
+import { getAtlasHighlights } from "../lib/highlights/atlas";
+import { getPollenHighlights } from "../lib/highlights/pollen";
 import { StickyNav } from "./wrapped/Nav";
 import { IntroSlide } from "./wrapped/Intro";
 import { BigSlide } from "./wrapped/BigSlide";
@@ -113,9 +120,25 @@ import { FeaturedStandardDocsSection } from "./featured/StandardDocs";
 import { FeaturedWispSection } from "./featured/Wisp";
 import { FeaturedVibeMealSection } from "./featured/VibeMeal";
 import { FeaturedAtStoreSection } from "./featured/AtStore";
+import { FeaturedBrewsSection } from "./featured/Brews";
+import { FeaturedCalendarSection } from "./featured/Calendar";
+import { FeaturedNpmxSection } from "./featured/Npmx";
+import { FeaturedMarqueSection } from "./featured/Marque";
+import { FeaturedAtlasSection } from "./featured/Atlas";
+import { FeaturedPollenSection } from "./featured/Pollen";
 
 const TOP_SLIDES = 6;
 const BENTO_COUNT = 9;
+
+type Bucket = { nsid: string; count: number };
+
+function countForPrefixes(buckets: Bucket[], prefixes: string[]): number {
+  let sum = 0;
+  for (const b of buckets) {
+    if (prefixes.some((p) => b.nsid.startsWith(p))) sum += b.count;
+  }
+  return sum;
+}
 
 export function Wrapped({ stats }: { stats: RepoStats }) {
   const allBuckets = Array.from(stats.byCollection.entries())
@@ -125,7 +148,12 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
     })
     .sort((a, b) => b.count - a.count);
 
-  const buckets = allBuckets.filter((b) => !isFeaturedNsid(b.nsid));
+  // Anything featured OR explicitly skipped (protocol/declaration noise like
+  // com.germnetwork.keyPackage) is removed from the supporting-cast bento
+  // and the long-tail list.
+  const buckets = allBuckets.filter(
+    (b) => !isFeaturedNsid(b.nsid) && !isSkippedNsid(b.nsid),
+  );
 
   const topSlides = buckets.slice(0, TOP_SLIDES);
   const bento = buckets.slice(TOP_SLIDES, TOP_SLIDES + BENTO_COUNT);
@@ -142,6 +170,8 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
     (a, b) => b[1] - a[1],
   );
 
+  // Build feature highlights
+  const bluesky = getBlueskyHighlights(stats.byCollection);
   const music = getMusicHighlights(stats.byCollection);
   const popfeed = getPopfeedHighlights(stats.byCollection);
   const grain = getGrainHighlights(stats);
@@ -156,7 +186,6 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
   const frontpage = getFrontpageHighlights(stats.byCollection);
   const drydown = getDrydownHighlights(stats);
   const status = getStatusHighlights(stats.byCollection);
-  const bluesky = getBlueskyHighlights(stats.byCollection);
   const atsumeat = getAtsumeatHighlights(stats.byCollection);
   const atbuddy = getAtBuddyHighlights(stats.byCollection);
   const bluePlace = getBluePlaceHighlights(stats.byCollection);
@@ -165,8 +194,6 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
   const smokesignal = getSmokeSignalHighlights(stats.byCollection);
   const sifa = getSifaHighlights(stats.byCollection);
   const spores = getSporesHighlights(stats.byCollection);
-
-  // New batch of featured services (live in src/lib/highlights/)
   const highFive = getHighFiveHighlights(stats.byCollection);
   const atvouch = getAtVouchHighlights(stats.byCollection);
   const atpoke = getAtPokeHighlights(stats.byCollection);
@@ -195,6 +222,91 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
   const wisp = getWispHighlights(stats.byCollection);
   const vibeMeal = getVibeMealHighlights(stats.byCollection);
   const atstore = getAtStoreHighlights(stats.byCollection);
+  const brews = getBrewsHighlights(stats.byCollection);
+  const calendar = getCalendarHighlights(stats.byCollection);
+  const npmx = getNpmxHighlights(stats.byCollection);
+  const marque = getMarqueHighlights(stats.byCollection);
+  const atlas = getAtlasHighlights(stats.byCollection);
+  const pollen = getPollenHighlights(stats.byCollection);
+
+  // Build the spotlight list — each entry is a featured section that only
+  // appears when its highlight is non-null. We then sort by how many records
+  // the user has under that service, so the spotlight order reflects what
+  // each individual person actually does most (rather than always opening
+  // with Bluesky).
+  type Feature = { key: string; count: number; node: ReactNode };
+  const candidates: Array<{
+    key: string;
+    show: boolean;
+    prefixes: string[];
+    node: ReactNode;
+  }> = [
+    { key: "bluesky", show: !!bluesky, prefixes: ["app.bsky.", "chat.bsky."], node: bluesky && <FeaturedBlueskySection data={bluesky} /> },
+    { key: "music", show: !!music, prefixes: ["app.rocksky.", "fm.teal.", "fm.plyr."], node: music && <FeaturedMusicSection data={music} /> },
+    { key: "popfeed", show: !!popfeed, prefixes: ["social.popfeed."], node: popfeed && <FeaturedPopfeedSection data={popfeed} handle={stats.handle} /> },
+    { key: "flashes", show: !!flashes, prefixes: ["blue.flashes."], node: flashes && <FeaturedFlashesSection data={flashes} /> },
+    { key: "grain", show: !!grain, prefixes: ["social.grain."], node: grain && <FeaturedGrainSection data={grain} /> },
+    { key: "reading", show: !!reading, prefixes: ["com.whtwnd.", "buzz.bookhive.", "pub.leaflet.", "at.margin.", "at.monomarks.", "my.skylights."], node: reading && <FeaturedReadingSection data={reading} /> },
+    { key: "standardDocs", show: !!standardDocs, prefixes: ["site.standard."], node: standardDocs && <FeaturedStandardDocsSection data={standardDocs} /> },
+    { key: "sifa", show: !!sifa, prefixes: ["id.sifa."], node: sifa && <FeaturedSifaSection data={sifa} /> },
+    { key: "status", show: !!status, prefixes: ["is.dame.", "xyz.statusphere.", "vg.nat.istat.", "social.kibun.", "io.zzstoatzz.status."], node: status && <FeaturedStatusSection data={status} /> },
+    { key: "psky", show: !!psky, prefixes: ["social.psky."], node: psky && <FeaturedPskySection data={psky} /> },
+    { key: "streamplace", show: !!streamplace, prefixes: ["place.stream."], node: streamplace && <FeaturedStreamplaceSection data={streamplace} /> },
+    { key: "tangled", show: !!tangled, prefixes: ["sh.tangled."], node: tangled && <FeaturedTangledSection data={tangled} /> },
+    { key: "anisota", show: !!anisota, prefixes: ["net.anisota."], node: anisota && <FeaturedAnisotaSection data={anisota} /> },
+    { key: "games", show: !!games, prefixes: ["blue.2048.", "games.firehose.", "farm.smol.games.", "tools.atp.", "com.imlunahey.leaderboard."], node: games && <FeaturedGamesSection data={games} /> },
+    { key: "rpg", show: !!rpg, prefixes: ["actor.rpg.", "equipment.rpg."], node: rpg && <FeaturedRpgSection data={rpg} /> },
+    { key: "atbuddy", show: !!atbuddy, prefixes: ["app.atbuddy."], node: atbuddy && <FeaturedAtBuddySection data={atbuddy} /> },
+    { key: "atsumeat", show: !!atsumeat, prefixes: ["com.suibari.atsumeat."], node: atsumeat && <FeaturedAtsumeatSection data={atsumeat} /> },
+    { key: "stickers", show: !!stickers, prefixes: ["boo.sky."], node: stickers && <FeaturedStickersSection data={stickers} /> },
+    { key: "badges", show: !!badges, prefixes: ["blue.badge."], node: badges && <FeaturedBadgesSection data={badges} /> },
+    { key: "bluePlace", show: !!bluePlace, prefixes: ["blue.place."], node: bluePlace && <FeaturedBluePlaceSection data={bluePlace} /> },
+    { key: "spores", show: !!spores, prefixes: ["coop.hypha.spores."], node: spores && <FeaturedSporesSection data={spores} /> },
+    { key: "smokesignal", show: !!smokesignal, prefixes: ["events.smokesignal."], node: smokesignal && <FeaturedSmokeSignalSection data={smokesignal} /> },
+    { key: "calendar", show: !!calendar, prefixes: ["community.lexicon.calendar."], node: calendar && <FeaturedCalendarSection data={calendar} /> },
+    { key: "youandme", show: !!youandme, prefixes: ["at.youandme."], node: youandme && <FeaturedYouAndMeSection data={youandme} /> },
+    { key: "highFive", show: !!highFive, prefixes: ["com.atprotofans.high-five."], node: highFive && <FeaturedHighFiveSection data={highFive} /> },
+    { key: "atvouch", show: !!atvouch, prefixes: ["dev.atvouch."], node: atvouch && <FeaturedAtVouchSection data={atvouch} /> },
+    { key: "atpoke", show: !!atpoke, prefixes: ["xyz.atpoke."], node: atpoke && <FeaturedAtPokeSection data={atpoke} /> },
+    { key: "intros", show: !!intros, prefixes: ["com.skybemoreblue."], node: intros && <FeaturedIntrosSection data={intros} /> },
+    { key: "sparks", show: !!sparks, prefixes: ["tech.tokimeki.takibi."], node: sparks && <FeaturedSparksSection data={sparks} /> },
+    { key: "blips", show: !!blips, prefixes: ["stream.thought."], node: blips && <FeaturedBlipsSection data={blips} /> },
+    { key: "asq", show: !!asq, prefixes: ["fyi.asq."], node: asq && <FeaturedAsqSection data={asq} /> },
+    { key: "drydown", show: !!drydown, prefixes: ["social.drydown."], node: drydown && <FeaturedDrydownSection data={drydown} /> },
+    { key: "frontpage", show: !!frontpage, prefixes: ["fyi.unravel.frontpage."], node: frontpage && <FeaturedFrontpageSection data={frontpage} /> },
+    { key: "flushing", show: !!flushing, prefixes: ["im.flushing."], node: flushing && <FeaturedFlushingSection data={flushing} /> },
+    { key: "sidetrail", show: !!sidetrail, prefixes: ["app.sidetrail."], node: sidetrail && <FeaturedSidetrailSection data={sidetrail} /> },
+    { key: "tokimekiPolls", show: !!tokimekiPolls, prefixes: ["tech.tokimeki.poll."], node: tokimekiPolls && <FeaturedTokimekiPollsSection data={tokimekiPolls} /> },
+    { key: "wishlist", show: !!wishlist, prefixes: ["blue.registry."], node: wishlist && <FeaturedWishlistSection data={wishlist} /> },
+    { key: "atstore", show: !!atstore, prefixes: ["fyi.atstore."], node: atstore && <FeaturedAtStoreSection data={atstore} /> },
+    { key: "atguilds", show: !!atguilds, prefixes: ["dev.jakestout.atguilds."], node: atguilds && <FeaturedAtGuildsSection data={atguilds} /> },
+    { key: "linkring", show: !!linkring, prefixes: ["lol.linkring."], node: linkring && <FeaturedLinkringSection data={linkring} /> },
+    { key: "atcircle", show: !!atcircle, prefixes: ["net.asadaame5121.at-circle."], node: atcircle && <FeaturedAtCircleSection data={atcircle} /> },
+    { key: "rankthat", show: !!rankthat, prefixes: ["net.rankthat."], node: rankthat && <FeaturedRankthatSection data={rankthat} /> },
+    { key: "cosmik", show: !!cosmik, prefixes: ["network.cosmik."], node: cosmik && <FeaturedCosmikSection data={cosmik} /> },
+    { key: "attodo", show: !!attodo, prefixes: ["app.attodo."], node: attodo && <FeaturedAtToDoSection data={attodo} /> },
+    { key: "skyboard", show: !!skyboard, prefixes: ["dev.skyboard."], node: skyboard && <FeaturedSkyboardSection data={skyboard} /> },
+    { key: "skytalk", show: !!skytalk, prefixes: ["blue.skytalk."], node: skytalk && <FeaturedSkytalkSection data={skytalk} /> },
+    { key: "madebydannyCdn", show: !!madebydannyCdn, prefixes: ["uk.madebydanny."], node: madebydannyCdn && <FeaturedMadebydannyCdnSection data={madebydannyCdn} /> },
+    { key: "flobitImages", show: !!flobitImages, prefixes: ["dev.flo-bit."], node: flobitImages && <FeaturedFlobitImagesSection data={flobitImages} /> },
+    { key: "sonasky", show: !!sonasky, prefixes: ["app.sonasky."], node: sonasky && <FeaturedSonaskySection data={sonasky} /> },
+    { key: "simocracy", show: !!simocracy, prefixes: ["org.simocracy."], node: simocracy && <FeaturedSimocracySection data={simocracy} /> },
+    { key: "wisp", show: !!wisp, prefixes: ["place.wisp."], node: wisp && <FeaturedWispSection data={wisp} /> },
+    { key: "vibeMeal", show: !!vibeMeal, prefixes: ["com.vibe-coded."], node: vibeMeal && <FeaturedVibeMealSection data={vibeMeal} /> },
+    { key: "brews", show: !!brews, prefixes: ["social.arabica.", "social.oolong."], node: brews && <FeaturedBrewsSection data={brews} /> },
+    { key: "npmx", show: !!npmx, prefixes: ["dev.npmx."], node: npmx && <FeaturedNpmxSection data={npmx} /> },
+    { key: "marque", show: !!marque, prefixes: ["at.marque."], node: marque && <FeaturedMarqueSection data={marque} /> },
+    { key: "atlas", show: !!atlas, prefixes: ["city.atlas."], node: atlas && <FeaturedAtlasSection data={atlas} /> },
+    { key: "pollen", show: !!pollen, prefixes: ["place.pollen."], node: pollen && <FeaturedPollenSection data={pollen} /> },
+  ];
+  const features: Feature[] = candidates
+    .filter((c) => c.show && c.node)
+    .map((c) => ({
+      key: c.key,
+      count: countForPrefixes(allBuckets, c.prefixes),
+      node: c.node,
+    }))
+    .sort((a, b) => b.count - a.count);
 
   async function onShare() {
     return shareWrappedUrl(stats.handle);
@@ -204,7 +316,9 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
     <div className="min-h-svh bg-cream text-ink">
       <StickyNav handle={stats.handle} onShare={onShare} />
       <IntroSlide stats={stats} topServices={topServices} onShare={onShare} />
-      {bluesky && <FeaturedBlueskySection data={bluesky} />}
+      {features.map((f) => (
+        <Fragment key={f.key}>{f.node}</Fragment>
+      ))}
       {topSlides.map((b, i) => (
         <BigSlide
           key={b.nsid}
@@ -215,56 +329,6 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
           descriptor={b.descriptor}
         />
       ))}
-      {music && <FeaturedMusicSection data={music} />}
-      {popfeed && <FeaturedPopfeedSection data={popfeed} />}
-      {flashes && <FeaturedFlashesSection data={flashes} />}
-      {grain && <FeaturedGrainSection data={grain} />}
-      {reading && <FeaturedReadingSection data={reading} />}
-      {standardDocs && <FeaturedStandardDocsSection data={standardDocs} />}
-      {sifa && <FeaturedSifaSection data={sifa} />}
-      {status && <FeaturedStatusSection data={status} />}
-      {psky && <FeaturedPskySection data={psky} />}
-      {streamplace && <FeaturedStreamplaceSection data={streamplace} />}
-      {tangled && <FeaturedTangledSection data={tangled} />}
-      {anisota && <FeaturedAnisotaSection data={anisota} />}
-      {games && <FeaturedGamesSection data={games} />}
-      {rpg && <FeaturedRpgSection data={rpg} />}
-      {atbuddy && <FeaturedAtBuddySection data={atbuddy} />}
-      {atsumeat && <FeaturedAtsumeatSection data={atsumeat} />}
-      {stickers && <FeaturedStickersSection data={stickers} />}
-      {badges && <FeaturedBadgesSection data={badges} />}
-      {bluePlace && <FeaturedBluePlaceSection data={bluePlace} />}
-      {spores && <FeaturedSporesSection data={spores} />}
-      {smokesignal && <FeaturedSmokeSignalSection data={smokesignal} />}
-      {youandme && <FeaturedYouAndMeSection data={youandme} />}
-      {highFive && <FeaturedHighFiveSection data={highFive} />}
-      {atvouch && <FeaturedAtVouchSection data={atvouch} />}
-      {atpoke && <FeaturedAtPokeSection data={atpoke} />}
-      {intros && <FeaturedIntrosSection data={intros} />}
-      {sparks && <FeaturedSparksSection data={sparks} />}
-      {blips && <FeaturedBlipsSection data={blips} />}
-      {asq && <FeaturedAsqSection data={asq} />}
-      {drydown && <FeaturedDrydownSection data={drydown} />}
-      {frontpage && <FeaturedFrontpageSection data={frontpage} />}
-      {flushing && <FeaturedFlushingSection data={flushing} />}
-      {sidetrail && <FeaturedSidetrailSection data={sidetrail} />}
-      {tokimekiPolls && <FeaturedTokimekiPollsSection data={tokimekiPolls} />}
-      {wishlist && <FeaturedWishlistSection data={wishlist} />}
-      {atstore && <FeaturedAtStoreSection data={atstore} />}
-      {atguilds && <FeaturedAtGuildsSection data={atguilds} />}
-      {linkring && <FeaturedLinkringSection data={linkring} />}
-      {atcircle && <FeaturedAtCircleSection data={atcircle} />}
-      {rankthat && <FeaturedRankthatSection data={rankthat} />}
-      {cosmik && <FeaturedCosmikSection data={cosmik} />}
-      {attodo && <FeaturedAtToDoSection data={attodo} />}
-      {skyboard && <FeaturedSkyboardSection data={skyboard} />}
-      {skytalk && <FeaturedSkytalkSection data={skytalk} />}
-      {madebydannyCdn && <FeaturedMadebydannyCdnSection data={madebydannyCdn} />}
-      {flobitImages && <FeaturedFlobitImagesSection data={flobitImages} />}
-      {sonasky && <FeaturedSonaskySection data={sonasky} />}
-      {simocracy && <FeaturedSimocracySection data={simocracy} />}
-      {wisp && <FeaturedWispSection data={wisp} />}
-      {vibeMeal && <FeaturedVibeMealSection data={vibeMeal} />}
       {bento.length > 0 && <BentoSection items={bento} />}
       {tail.length > 0 && <TailSection items={tail} />}
       <FooterStrip stats={stats} />

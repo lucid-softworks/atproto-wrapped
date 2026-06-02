@@ -2,7 +2,13 @@ import type { PopfeedHighlights } from "../../lib/featured";
 import { Cover } from "../Cover";
 import { initial } from "../../lib/format";
 
-export function FeaturedPopfeedSection({ data }: { data: PopfeedHighlights }) {
+export function FeaturedPopfeedSection({
+  data,
+  handle,
+}: {
+  data: PopfeedHighlights;
+  handle: string;
+}) {
   const typesSummary = Array.from(data.byType.entries())
     .sort((a, b) => b[1] - a[1])
     .map(([t, n]) => `${n.toLocaleString()} ${prettyPopfeedType(t, n)}`)
@@ -35,7 +41,7 @@ export function FeaturedPopfeedSection({ data }: { data: PopfeedHighlights }) {
 
         <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {data.reviews.map((r, i) => (
-            <ReviewCard key={`${r.title}-${i}`} review={r} />
+            <ReviewCard key={`${r.title}-${i}`} review={r} handle={handle} />
           ))}
         </div>
       </div>
@@ -45,12 +51,20 @@ export function FeaturedPopfeedSection({ data }: { data: PopfeedHighlights }) {
 
 function ReviewCard({
   review,
+  handle,
 }: {
   review: PopfeedHighlights["reviews"][number];
+  handle: string;
 }) {
+  const href = `https://popfeed.app/profile/${handle}/review/${review.rkey}`;
   return (
-    <div className="flex flex-col">
-      <div className="relative aspect-[2/3] overflow-hidden rounded-xl border-2 border-ink bg-ink/10">
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="group flex flex-col"
+    >
+      <div className="relative aspect-[2/3] overflow-hidden rounded-xl border-2 border-ink bg-ink/10 transition group-hover:translate-x-[-1px] group-hover:translate-y-[-1px] group-hover:shadow-[3px_3px_0_0_var(--color-ink)]">
         <Cover
           src={review.posterUrl}
           alt={review.title}
@@ -68,7 +82,7 @@ function ReviewCard({
           </span>
         )}
       </div>
-      <div className="mt-3 line-clamp-2 font-semibold leading-tight">
+      <div className="mt-3 line-clamp-2 font-semibold leading-tight group-hover:underline">
         {review.title}
       </div>
       {review.mainCredit && (
@@ -81,7 +95,7 @@ function ReviewCard({
           "{review.text}"
         </p>
       )}
-    </div>
+    </a>
   );
 }
 

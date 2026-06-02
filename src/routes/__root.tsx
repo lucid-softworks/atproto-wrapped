@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { lazy, Suspense, type ReactNode } from "react";
 import {
   Outlet,
   HeadContent,
@@ -7,6 +7,16 @@ import {
 } from "@tanstack/react-router";
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import appCss from "../index.css?url";
+
+// Dev-only: React Query devtools. Lazy-loaded + tree-shaken out of prod
+// builds by the import.meta.env.DEV check below.
+const ReactQueryDevtools = import.meta.env.DEV
+  ? lazy(() =>
+      import("@tanstack/react-query-devtools").then((m) => ({
+        default: m.ReactQueryDevtools,
+      })),
+    )
+  : null;
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
@@ -63,6 +73,11 @@ function RootDocument({ children }: { children: ReactNode }) {
       <body>
         <QueryClientProvider client={route.queryClient}>
           {children}
+          {ReactQueryDevtools ? (
+            <Suspense fallback={null}>
+              <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
+            </Suspense>
+          ) : null}
         </QueryClientProvider>
         <Scripts />
       </body>

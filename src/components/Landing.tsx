@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { Link } from "@tanstack/react-router";
 import type { FetchProgress, RepoStats } from "../lib/atproto";
 
 export type LoadState =
@@ -214,12 +215,15 @@ function FloatingTiles() {
 function Header() {
   return (
     <header className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
+      <Link
+        to="/"
+        className="flex items-center gap-2 rounded-full px-1 -mx-1 hover:bg-ink/5"
+      >
         <span className="inline-block h-3 w-3 rounded-full bg-wrap-pink" />
         <span className="font-mono text-sm font-medium tracking-tight text-ink">
           ATPROTO·WRAPPED
         </span>
-      </div>
+      </Link>
       <a
         href="https://atproto.com"
         target="_blank"

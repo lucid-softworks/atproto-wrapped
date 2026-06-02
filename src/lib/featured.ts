@@ -105,7 +105,61 @@ export const FEATURED_NSID_PREFIXES: string[] = [
   "place.wisp.",
   "com.vibe-coded.",
   "fyi.atstore.",
+  // — third-wave —
+  // beverages (Arabica coffee + Oolong tea, combined into Brews)
+  "social.arabica.",
+  "social.oolong.",
+  // calendar / events
+  "community.lexicon.calendar.",
+  // package registry likes
+  "dev.npmx.",
+  // domain registry + DNS
+  "at.marque.",
+  // location
+  "city.atlas.",
+  // pollen social
+  "place.pollen.",
 ];
+
+/**
+ * NSIDs that aren't user activity worth celebrating — protocol metadata,
+ * declarations, key packages, raw schema records, etc. These are filtered
+ * out of the supporting-cast bento and long-tail list entirely.
+ */
+export const SKIP_NSID_PREFIXES: string[] = [
+  // MLS crypto declarations / key packages live under this prefix; they
+  // are infrastructure, not activity.
+  "com.germnetwork.",
+  // Lexicon definitions stored as records
+  "com.atproto.lexicon.",
+  // Atmosphere test fixtures
+  "social.atmo.test.",
+  // Funding "declaration" — just announces that the actor is fundable
+  "fund.at.actor.",
+  // Generic service waitlists / declarations
+  "network.slices.waitlist.",
+  "org.signal.declaration",
+];
+
+/**
+ * Suffixes (the final NSID segment) that indicate the record is metadata
+ * about an account on a service, not activity on that service.
+ */
+const SKIP_SUFFIXES = new Set([
+  "profile",
+  "declaration",
+  "preferences",
+  "settings",
+  "config",
+]);
+
+export function isSkippedNsid(nsid: string): boolean {
+  for (const p of SKIP_NSID_PREFIXES) {
+    if (nsid.startsWith(p)) return true;
+  }
+  const last = nsid.split(".").pop() ?? "";
+  return SKIP_SUFFIXES.has(last);
+}
 
 /**
  * Exact NSIDs we want to claim that don't share a prefix with a service we own.
@@ -626,6 +680,7 @@ export type PopfeedReview = {
   posterUrl?: string;
   type: string;
   mainCredit?: string;
+  rkey: string;
   createdAt: Date | null;
 };
 
@@ -652,6 +707,7 @@ export function getPopfeedHighlights(
       posterUrl: strOrUndef(v.posterUrl),
       type: strOrNull(v.creativeWorkType) ?? "",
       mainCredit: strOrUndef(v.mainCredit),
+      rkey: r.rkey,
       createdAt: r.createdAt,
     };
   });

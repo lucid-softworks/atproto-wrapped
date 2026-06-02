@@ -19,6 +19,7 @@ export type SidetrailHighlights = {
   totalTrails: number;
   totalStops: number;
   completions: number;
+  completedTrailUris: string[];
 };
 
 function strOrUndef(v: unknown): string | undefined {
@@ -60,10 +61,23 @@ export function getSidetrailHighlights(
 
   const totalStops = trails.reduce((s, t) => s + t.stops.length, 0);
 
+  const completedTrailUris: string[] = [];
+  const seenUris = new Set<string>();
+  for (const r of completionRecords) {
+    const trail = r.value.trail;
+    if (!trail || typeof trail !== "object") continue;
+    const uri = (trail as Record<string, unknown>).uri;
+    if (typeof uri !== "string" || uri.length === 0) continue;
+    if (seenUris.has(uri)) continue;
+    seenUris.add(uri);
+    completedTrailUris.push(uri);
+  }
+
   return {
     trails: trails.slice(0, 8),
     totalTrails: trailRecords.length,
     totalStops,
     completions: completionRecords.length,
+    completedTrailUris,
   };
 }
