@@ -6,12 +6,16 @@ export function IntroSlide({
   stats,
   topServices,
   onShare,
+  year,
 }: {
   stats: RepoStats;
   topServices: Array<[string, number]>;
   onShare: () => Promise<"shared" | "copied" | "failed">;
+  year: number | "all";
 }) {
   const carMb = (stats.carBytes / (1024 * 1024)).toFixed(1);
+  const scopeSuffix = year === "all" ? " since you joined" : ` in ${year}`;
+  const span = year === "all" ? "life" : "year";
   return (
     <section className="relative overflow-hidden border-b-2 border-ink bg-cream">
       <div className="grain absolute inset-0" />
@@ -34,9 +38,9 @@ export function IntroSlide({
           <span className="bg-wrap-pink px-2 py-0.5 text-ink not-italic">
             {stats.byCollection.size}
           </span>{" "}
-          lexicons.
+          lexicons{scopeSuffix}.
           <span className="mt-3 block">
-            That's a {carMb} MB life on the open web.
+            That's a {carMb} MB {span} on the open web.
           </span>
         </p>
 

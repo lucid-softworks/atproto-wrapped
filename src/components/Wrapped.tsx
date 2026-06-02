@@ -471,6 +471,7 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
         stats={filteredStats}
         topServices={topServices}
         onShare={onShare}
+        year={year}
       />
       {ordered.map((f) => (
         <Fragment key={f.key}>{f.render(undefined)}</Fragment>
