@@ -151,7 +151,7 @@ export function FeaturedFrontpageSection({
                     key={`${v.subjectUri}-${i}`}
                     className="flex items-baseline justify-between gap-3 rounded-xl border-2 border-ink bg-cream p-3"
                   >
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="line-clamp-2 font-semibold leading-tight">
                         {title}
                       </div>
@@ -206,7 +206,7 @@ export function FeaturedFrontpageSection({
                     )}
                     {remote && (
                       <div className="mt-2 flex items-baseline justify-between gap-3 border-t border-ink/15 pt-2">
-                        <div className="min-w-0 font-mono text-[11px] text-ink/55">
+                        <div className="min-w-0 flex-1 truncate font-mono text-[11px] text-ink/55">
                           on{" "}
                           <span className="font-semibold text-ink/85">
                             {remote.title ?? remote.url ?? "submission"}
