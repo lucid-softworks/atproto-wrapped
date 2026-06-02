@@ -55,7 +55,7 @@ export function FeaturedRankthatSection({
               {data.collections.map((c) => (
                 <li
                   key={c.uri}
-                  className="rounded-2xl border-2 border-ink bg-cream p-4"
+                  className="min-w-0 overflow-hidden rounded-2xl border-2 border-ink bg-cream p-4"
                 >
                   <div className="flex items-baseline justify-between gap-2">
                     <div className="flex min-w-0 flex-1 items-center gap-2">
