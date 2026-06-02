@@ -156,7 +156,7 @@ function RpgSprite({
   const walkX = -fw * Math.min(cols, 3) * scale;
 
   return (
-    <div className="self-start rounded-2xl border-2 border-ink bg-cream p-4">
+    <div className="mx-auto w-fit self-start rounded-2xl border-2 border-ink bg-cream p-4 sm:mx-0">
       <div
         className={canAnimate ? "sprite-walk-3" : ""}
         style={
