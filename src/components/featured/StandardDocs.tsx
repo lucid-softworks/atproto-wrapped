@@ -4,6 +4,7 @@ import { fetchRecordByUri, parseAtUri } from "../../lib/highlights/_atUri";
 import { resolveHandlesForDids } from "../../lib/bskyProfiles";
 import { toDisplayHandle } from "../../lib/handle";
 import { FeaturedRow } from "./_shared";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
 type RemoteDoc = {
   uri: string;
@@ -69,9 +70,12 @@ async function fetchPublicationUrls(
 
 export function FeaturedStandardDocsSection({
   data,
+  theme,
 }: {
   data: StandardDocsHighlights;
+  theme?: SectionTheme;
 }) {
+  const t = sectionTheme(theme ?? "cyan");
   const stats: Array<[string, number]> = [
     ["Documents", data.totalDocs],
     ["Recommends", data.totalRecommends],
@@ -113,7 +117,7 @@ export function FeaturedStandardDocsSection({
   }
 
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-cyan text-ink">
+    <section className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}>
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">
           <div className="font-mono text-xs tracking-widest text-ink/65 uppercase">

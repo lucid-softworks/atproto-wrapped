@@ -1,6 +1,7 @@
 import type { BlueskyHighlights } from "../../lib/featured";
 import { compactNumber } from "../../lib/format";
 import { toDisplayHandle } from "../../lib/handle";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
 const BSKY_HERO_THEME: Record<
   BlueskyHighlights["hero"][number]["theme"],
@@ -15,9 +16,18 @@ const BSKY_HERO_THEME: Record<
   orange: { bg: "bg-wrap-orange", fg: "text-ink", muted: "text-ink/65" },
 };
 
-export function FeaturedBlueskySection({ data }: { data: BlueskyHighlights }) {
+export function FeaturedBlueskySection({
+  data,
+  theme,
+}: {
+  data: BlueskyHighlights;
+  theme?: SectionTheme;
+}) {
+  const t = sectionTheme(theme ?? "cobalt");
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-cobalt text-cream">
+    <section
+      className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}
+    >
       <div className="grain absolute inset-0 opacity-[0.04]" />
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">

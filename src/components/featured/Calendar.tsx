@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { CalendarHighlights } from "../../lib/highlights/calendar";
 import { fetchRecordByUri, parseAtUri } from "../../lib/highlights/_atUri";
 import { resolveHandlesForDids } from "../../lib/bskyProfiles";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
 function formatDateTime(d: Date): string {
   return d.toLocaleString(undefined, {
@@ -92,9 +93,12 @@ async function fetchEvents(uris: string[]): Promise<Map<string, RemoteEvent>> {
 
 export function FeaturedCalendarSection({
   data,
+  theme,
 }: {
   data: CalendarHighlights;
+  theme?: SectionTheme;
 }) {
+  const t = sectionTheme(theme ?? "violet");
   const rsvpStats = Array.from(data.rsvpsByStatus.entries()).sort(
     (a, b) => b[1] - a[1],
   );
@@ -135,7 +139,9 @@ export function FeaturedCalendarSection({
   const vodHandles = vodHandlesQuery.data ?? new Map<string, string>();
 
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-violet text-cream">
+    <section
+      className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}
+    >
       <div className="grain absolute inset-0 opacity-[0.04]" />
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between gap-3">

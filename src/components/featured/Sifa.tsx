@@ -1,6 +1,14 @@
 import type { SifaHighlights } from "../../lib/featured";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
-export function FeaturedSifaSection({ data }: { data: SifaHighlights }) {
+export function FeaturedSifaSection({
+  data,
+  theme,
+}: {
+  data: SifaHighlights;
+  theme?: SectionTheme;
+}) {
+  const t = sectionTheme(theme ?? "pink");
   const counts = (
     [
       ["Skills", data.skills],
@@ -16,7 +24,7 @@ export function FeaturedSifaSection({ data }: { data: SifaHighlights }) {
   ).filter(([, n]) => n > 0);
 
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-cream text-ink">
+    <section className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}>
       <div className="grain absolute inset-0" />
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">

@@ -1,7 +1,15 @@
 import type { DrydownHighlights } from "../../lib/featured";
 import { Cover } from "../Cover";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
-export function FeaturedDrydownSection({ data }: { data: DrydownHighlights }) {
+export function FeaturedDrydownSection({
+  data,
+  theme,
+}: {
+  data: DrydownHighlights;
+  theme?: SectionTheme;
+}) {
+  const t = sectionTheme(theme ?? "pink");
   const stats: Array<[string, number]> = [
     ["Reviews", data.total],
     ["Fragrances", data.fragrances],
@@ -9,7 +17,9 @@ export function FeaturedDrydownSection({ data }: { data: DrydownHighlights }) {
   ].filter(([, n]) => (n as number) > 0) as Array<[string, number]>;
 
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-pink text-ink">
+    <section
+      className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}
+    >
       <div className="grain absolute inset-0" />
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">

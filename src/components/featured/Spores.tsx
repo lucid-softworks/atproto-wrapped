@@ -1,6 +1,14 @@
 import type { SporesHighlights } from "../../lib/featured";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
-export function FeaturedSporesSection({ data }: { data: SporesHighlights }) {
+export function FeaturedSporesSection({
+  data,
+  theme,
+}: {
+  data: SporesHighlights;
+  theme?: SectionTheme;
+}) {
+  const t = sectionTheme(theme ?? "mint");
   const stats: Array<[string, string]> = [];
   if (data.takenFlowers > 0)
     stats.push(["Flowers taken", data.takenFlowers.toLocaleString()]);
@@ -11,7 +19,7 @@ export function FeaturedSporesSection({ data }: { data: SporesHighlights }) {
   if (data.hasSite) stats.push(["Site set up", "yes"]);
 
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-mint text-ink">
+    <section className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}>
       <div className="grain absolute inset-0" />
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">

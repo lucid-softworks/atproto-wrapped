@@ -5,6 +5,7 @@ import type {
 import { Cover } from "../Cover";
 import { initial } from "../../lib/format";
 import { FeaturedRow } from "./_shared";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
 // Each creative-work type maps to its own group with a verb that actually
 // fits ("watched" makes no sense for a video game). Order here = render order.
@@ -19,10 +20,13 @@ const TYPE_GROUPS: Array<{ type: string; label: string }> = [
 export function FeaturedPopfeedSection({
   data,
   did,
+  theme,
 }: {
   data: PopfeedHighlights;
   did: string;
+  theme?: SectionTheme;
 }) {
+  const t = sectionTheme(theme ?? "yellow");
   const typesSummary = Array.from(data.byType.entries())
     .sort((a, b) => b[1] - a[1])
     .map(([t, n]) => `${n.toLocaleString()} ${prettyPopfeedType(t, n)}`)
@@ -42,7 +46,7 @@ export function FeaturedPopfeedSection({
   }
 
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-yellow text-ink">
+    <section className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}>
       <div className="grain absolute inset-0" />
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">

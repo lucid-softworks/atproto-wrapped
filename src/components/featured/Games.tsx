@@ -1,8 +1,18 @@
 import type { GamesHighlights } from "../../lib/featured";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
-export function FeaturedGamesSection({ data }: { data: GamesHighlights }) {
+export function FeaturedGamesSection({
+  data,
+  theme,
+}: {
+  data: GamesHighlights;
+  theme?: SectionTheme;
+}) {
+  const t = sectionTheme(theme ?? "red");
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-red text-cream">
+    <section
+      className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}
+    >
       <div className="grain absolute inset-0 opacity-[0.04]" />
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">

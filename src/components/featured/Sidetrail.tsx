@@ -6,6 +6,7 @@ import type {
 } from "../../lib/highlights/sidetrail";
 import { fetchRecordByUri, parseAtUri } from "../../lib/highlights/_atUri";
 import { FeaturedRow } from "./_shared";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
 const MAX_REFERENCED_TRAILS = 6;
 
@@ -99,9 +100,12 @@ function TrailCard({ trail }: { trail: SidetrailTrail }) {
 
 export function FeaturedSidetrailSection({
   data,
+  theme,
 }: {
   data: SidetrailHighlights;
+  theme?: SectionTheme;
 }) {
+  const t = sectionTheme(theme ?? "lime");
   const referencedUris = data.completedTrailUris.slice(0, MAX_REFERENCED_TRAILS);
   const walkedQuery = useQuery({
     queryKey: ["sidetrail-walked-trails", referencedUris],
@@ -120,7 +124,7 @@ export function FeaturedSidetrailSection({
   }
 
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-lime text-ink">
+    <section className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}>
       <div className="grain absolute inset-0" />
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">

@@ -3,6 +3,7 @@ import type { BlackskyHighlights } from "../../lib/highlights/blacksky";
 import { fetchRecordByUri, parseAtUri } from "../../lib/highlights/_atUri";
 import { resolveHandlesForDids } from "../../lib/bskyProfiles";
 import { toDisplayHandle } from "../../lib/handle";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
 type RemoteStatement = {
   text: string;
@@ -47,9 +48,12 @@ function formatDate(d: Date): string {
 
 export function FeaturedBlackskySection({
   data,
+  theme,
 }: {
   data: BlackskyHighlights;
+  theme?: SectionTheme;
 }) {
+  const t = sectionTheme(theme ?? "cobalt");
   const subjectUris = Array.from(
     new Set(data.recentVotes.map((v) => v.subjectUri).filter(Boolean)),
   );
@@ -74,7 +78,9 @@ export function FeaturedBlackskySection({
   const handles = authorsQuery.data ?? new Map<string, string>();
 
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-cobalt text-cream">
+    <section
+      className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}
+    >
       <div className="grain absolute inset-0 opacity-[0.04]" />
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between gap-3">

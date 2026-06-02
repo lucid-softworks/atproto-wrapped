@@ -2,6 +2,7 @@ import type {
   AiConsentHighlights,
   AiConsentPref,
 } from "../../lib/highlights/aiConsent";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
 const LABELS: Record<AiConsentPref["key"], { title: string; about: string }> = {
   training: {
@@ -24,11 +25,16 @@ const LABELS: Record<AiConsentPref["key"], { title: string; about: string }> = {
 
 export function FeaturedAiConsentSection({
   data,
+  theme,
 }: {
   data: AiConsentHighlights;
+  theme?: SectionTheme;
 }) {
+  const t = sectionTheme(theme ?? "red");
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-red text-cream">
+    <section
+      className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}
+    >
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">
           <div className="font-mono text-xs tracking-widest text-cream/65 uppercase">

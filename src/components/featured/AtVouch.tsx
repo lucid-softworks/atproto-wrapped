@@ -2,12 +2,16 @@ import { useQuery } from "@tanstack/react-query";
 import type { AtVouchHighlights } from "../../lib/highlights/atvouch";
 import { resolveHandlesForDids } from "../../lib/bskyProfiles";
 import { toDisplayHandle } from "../../lib/handle";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
 export function FeaturedAtVouchSection({
   data,
+  theme,
 }: {
   data: AtVouchHighlights;
+  theme?: SectionTheme;
 }) {
+  const t = sectionTheme(theme ?? "violet");
   const dids = data.vouches.map((v) => v.subject).filter(Boolean);
   const handlesQuery = useQuery({
     queryKey: ["bsky-handles", "atvouch", dids],
@@ -18,7 +22,9 @@ export function FeaturedAtVouchSection({
   const handles = handlesQuery.data ?? new Map<string, string>();
 
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-violet text-cream">
+    <section
+      className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}
+    >
       <div className="grain absolute inset-0 opacity-[0.04]" />
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">

@@ -1,8 +1,16 @@
 import type { AnisotaHighlights } from "../../lib/featured";
 import { initial } from "../../lib/format";
 import { FeaturedRow } from "./_shared";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
-export function FeaturedAnisotaSection({ data }: { data: AnisotaHighlights }) {
+export function FeaturedAnisotaSection({
+  data,
+  theme,
+}: {
+  data: AnisotaHighlights;
+  theme?: SectionTheme;
+}) {
+  const t = sectionTheme(theme ?? "lime");
   const pct =
     data.totalXP !== null && data.xpToNextLevel
       ? Math.round(
@@ -23,7 +31,9 @@ export function FeaturedAnisotaSection({ data }: { data: AnisotaHighlights }) {
   ].filter(([, n]) => (n as number) > 0) as Array<[string, number]>;
 
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-lime text-ink">
+    <section
+      className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}
+    >
       <div className="grain absolute inset-0" />
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">

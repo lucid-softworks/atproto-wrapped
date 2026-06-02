@@ -7,6 +7,7 @@ import {
 import { resolveHandlesForDids } from "../../lib/bskyProfiles";
 import { toDisplayHandle } from "../../lib/handle";
 import { FeaturedRow } from "./_shared";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
 const REACTION_EMOJI: Record<string, string> = {
   seed: "🌱",
@@ -75,7 +76,14 @@ function kindLabel(kind: RemotePollenPost["kind"]): string {
   }
 }
 
-export function FeaturedPollenSection({ data }: { data: PollenHighlights }) {
+export function FeaturedPollenSection({
+  data,
+  theme,
+}: {
+  data: PollenHighlights;
+  theme?: SectionTheme;
+}) {
+  const t = sectionTheme(theme ?? "lime");
   const reactionEntries = Array.from(data.reactionsByType.entries()).sort(
     (a, b) => b[1] - a[1],
   );
@@ -107,7 +115,7 @@ export function FeaturedPollenSection({ data }: { data: PollenHighlights }) {
   const handles = authorsQuery.data ?? new Map<string, string>();
 
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-lime text-ink">
+    <section className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}>
       <div className="grain absolute inset-0" />
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">

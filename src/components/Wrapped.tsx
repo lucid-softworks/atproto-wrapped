@@ -78,6 +78,7 @@ import { StickyNav } from "./wrapped/Nav";
 import { IntroSlide } from "./wrapped/Intro";
 import { TailSection } from "./wrapped/Tail";
 import { FooterStrip } from "./wrapped/Footer";
+import { CYCLE_THEMES, type SectionTheme } from "./featured/_theme";
 import { FeaturedBlueskySection } from "./featured/Bluesky";
 import { FeaturedMusicSection } from "./featured/Music";
 import { FeaturedPopfeedSection } from "./featured/Popfeed";
@@ -261,101 +262,104 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
   // the user has under that service, so the spotlight order reflects what
   // each individual person actually does most (rather than always opening
   // with Bluesky).
-  type Feature = { key: string; count: number; theme: string; node: ReactNode };
+  type Feature = {
+    key: string;
+    count: number;
+    render: (theme: SectionTheme) => ReactNode;
+  };
   const candidates: Array<{
     key: string;
     show: boolean;
     prefixes: string[];
-    /** Background-color token used by the section so we can break up runs
-     *  of same-colored sections after activity-sorting. */
-    theme: string;
-    node: ReactNode;
+    render: (theme: SectionTheme) => ReactNode;
   }> = [
-    { key: "bluesky", show: !!bluesky, prefixes: ["app.bsky.", "chat.bsky."], theme: "cobalt", node: bluesky && <FeaturedBlueskySection data={bluesky} /> },
-    { key: "music", show: !!music, prefixes: ["app.rocksky.", "fm.teal.", "fm.plyr."], theme: "orange", node: music && <FeaturedMusicSection data={music} /> },
-    { key: "popfeed", show: !!popfeed, prefixes: ["social.popfeed."], theme: "yellow", node: popfeed && <FeaturedPopfeedSection data={popfeed} did={stats.did} /> },
-    { key: "flashes", show: !!flashes, prefixes: ["blue.flashes."], theme: "pink", node: flashes && <FeaturedFlashesSection data={flashes} /> },
-    { key: "grain", show: !!grain, prefixes: ["social.grain."], theme: "mint", node: grain && <FeaturedGrainSection data={grain} /> },
-    { key: "reading", show: !!reading, prefixes: ["com.whtwnd.", "buzz.bookhive.", "pub.leaflet.", "at.margin.", "at.monomarks.", "my.skylights."], theme: "violet", node: reading && <FeaturedReadingSection data={reading} /> },
-    { key: "standardDocs", show: !!standardDocs, prefixes: ["site.standard."], theme: "cyan", node: standardDocs && <FeaturedStandardDocsSection data={standardDocs} /> },
-    { key: "sifa", show: !!sifa, prefixes: ["id.sifa."], theme: "cream", node: sifa && <FeaturedSifaSection data={sifa} /> },
-    { key: "status", show: !!status, prefixes: ["is.dame.", "xyz.statusphere.", "vg.nat.istat.", "social.kibun.", "io.zzstoatzz.status."], theme: "violet", node: status && <FeaturedStatusSection data={status} /> },
-    { key: "psky", show: !!psky, prefixes: ["social.psky."], theme: "cyan", node: psky && <FeaturedPskySection data={psky} /> },
-    { key: "streamplace", show: !!streamplace, prefixes: ["place.stream."], theme: "cyan", node: streamplace && <FeaturedStreamplaceSection data={streamplace} /> },
-    { key: "tangled", show: !!tangled, prefixes: ["sh.tangled."], theme: "violet", node: tangled && <FeaturedTangledSection data={tangled} /> },
-    { key: "anisota", show: !!anisota, prefixes: ["net.anisota."], theme: "lime", node: anisota && <FeaturedAnisotaSection data={anisota} /> },
-    { key: "games", show: !!games, prefixes: ["blue.2048.", "games.firehose.", "farm.smol.games.", "tools.atp.", "com.imlunahey.leaderboard."], theme: "red", node: games && <FeaturedGamesSection data={games} /> },
-    { key: "rpg", show: !!rpg, prefixes: ["actor.rpg.", "equipment.rpg."], theme: "lime", node: rpg && <FeaturedRpgSection data={rpg} /> },
-    { key: "atbuddy", show: !!atbuddy, prefixes: ["app.atbuddy."], theme: "pink", node: atbuddy && <FeaturedAtBuddySection data={atbuddy} /> },
-    { key: "atsumeat", show: !!atsumeat, prefixes: ["com.suibari.atsumeat."], theme: "yellow", node: atsumeat && <FeaturedAtsumeatSection data={atsumeat} /> },
-    { key: "stickers", show: !!stickers, prefixes: ["boo.sky."], theme: "pink", node: stickers && <FeaturedStickersSection data={stickers} /> },
-    { key: "badges", show: !!badges, prefixes: ["blue.badge."], theme: "cobalt", node: badges && <FeaturedBadgesSection data={badges} /> },
-    { key: "bluePlace", show: !!bluePlace, prefixes: ["blue.place."], theme: "cobalt", node: bluePlace && <FeaturedBluePlaceSection data={bluePlace} /> },
-    { key: "spores", show: !!spores, prefixes: ["coop.hypha.spores."], theme: "mint", node: spores && <FeaturedSporesSection data={spores} /> },
-    { key: "smokesignal", show: !!smokesignal, prefixes: ["events.smokesignal."], theme: "red", node: smokesignal && <FeaturedSmokeSignalSection data={smokesignal} /> },
-    { key: "calendar", show: !!calendar, prefixes: ["community.lexicon.calendar."], theme: "violet", node: calendar && <FeaturedCalendarSection data={calendar} /> },
-    { key: "youandme", show: !!youandme, prefixes: ["at.youandme."], theme: "pink", node: youandme && <FeaturedYouAndMeSection data={youandme} /> },
-    { key: "highFive", show: !!highFive, prefixes: ["com.atprotofans.high-five."], theme: "lime", node: highFive && <FeaturedHighFiveSection data={highFive} /> },
-    { key: "atvouch", show: !!atvouch, prefixes: ["dev.atvouch."], theme: "violet", node: atvouch && <FeaturedAtVouchSection data={atvouch} /> },
-    { key: "atpoke", show: !!atpoke, prefixes: ["xyz.atpoke."], theme: "pink", node: atpoke && <FeaturedAtPokeSection data={atpoke} /> },
-    { key: "intros", show: !!intros, prefixes: ["com.skybemoreblue."], theme: "pink", node: intros && <FeaturedIntrosSection data={intros} /> },
-    { key: "sparks", show: !!sparks, prefixes: ["tech.tokimeki.takibi."], theme: "orange", node: sparks && <FeaturedSparksSection data={sparks} /> },
-    { key: "blips", show: !!blips, prefixes: ["stream.thought."], theme: "cyan", node: blips && <FeaturedBlipsSection data={blips} /> },
-    { key: "asq", show: !!asq, prefixes: ["fyi.asq."], theme: "mint", node: asq && <FeaturedAsqSection data={asq} /> },
-    { key: "drydown", show: !!drydown, prefixes: ["social.drydown."], theme: "pink", node: drydown && <FeaturedDrydownSection data={drydown} /> },
-    { key: "frontpage", show: !!frontpage, prefixes: ["fyi.unravel.frontpage."], theme: "orange", node: frontpage && <FeaturedFrontpageSection data={frontpage} /> },
-    { key: "flushing", show: !!flushing, prefixes: ["im.flushing."], theme: "yellow", node: flushing && <FeaturedFlushingSection data={flushing} /> },
-    { key: "sidetrail", show: !!sidetrail, prefixes: ["app.sidetrail."], theme: "lime", node: sidetrail && <FeaturedSidetrailSection data={sidetrail} /> },
-    { key: "tokimekiPolls", show: !!tokimekiPolls, prefixes: ["tech.tokimeki.poll."], theme: "orange", node: tokimekiPolls && <FeaturedTokimekiPollsSection data={tokimekiPolls} /> },
-    { key: "wishlist", show: !!wishlist, prefixes: ["blue.registry."], theme: "yellow", node: wishlist && <FeaturedWishlistSection data={wishlist} /> },
-    { key: "atstore", show: !!atstore, prefixes: ["fyi.atstore."], theme: "pink", node: atstore && <FeaturedAtStoreSection data={atstore} /> },
-    { key: "atguilds", show: !!atguilds, prefixes: ["dev.jakestout.atguilds."], theme: "yellow", node: atguilds && <FeaturedAtGuildsSection data={atguilds} /> },
-    { key: "linkring", show: !!linkring, prefixes: ["lol.linkring."], theme: "pink", node: linkring && <FeaturedLinkringSection data={linkring} /> },
-    { key: "atcircle", show: !!atcircle, prefixes: ["net.asadaame5121.at-circle."], theme: "mint", node: atcircle && <FeaturedAtCircleSection data={atcircle} /> },
-    { key: "rankthat", show: !!rankthat, prefixes: ["net.rankthat."], theme: "orange", node: rankthat && <FeaturedRankthatSection data={rankthat} /> },
-    { key: "cosmik", show: !!cosmik, prefixes: ["network.cosmik."], theme: "lime", node: cosmik && <FeaturedCosmikSection data={cosmik} /> },
-    { key: "attodo", show: !!attodo, prefixes: ["app.attodo."], theme: "cyan", node: attodo && <FeaturedAtToDoSection data={attodo} /> },
-    { key: "skyboard", show: !!skyboard, prefixes: ["dev.skyboard."], theme: "violet", node: skyboard && <FeaturedSkyboardSection data={skyboard} /> },
-    { key: "skytalk", show: !!skytalk, prefixes: ["blue.skytalk."], theme: "cobalt", node: skytalk && <FeaturedSkytalkSection data={skytalk} /> },
-    { key: "madebydannyCdn", show: !!madebydannyCdn, prefixes: ["uk.madebydanny."], theme: "mint", node: madebydannyCdn && <FeaturedMadebydannyCdnSection data={madebydannyCdn} /> },
-    { key: "flobitImages", show: !!flobitImages, prefixes: ["dev.flo-bit."], theme: "cyan", node: flobitImages && <FeaturedFlobitImagesSection data={flobitImages} /> },
-    { key: "sonasky", show: !!sonasky, prefixes: ["app.sonasky."], theme: "violet", node: sonasky && <FeaturedSonaskySection data={sonasky} /> },
-    { key: "simocracy", show: !!simocracy, prefixes: ["org.simocracy."], theme: "red", node: simocracy && <FeaturedSimocracySection data={simocracy} /> },
-    { key: "wisp", show: !!wisp, prefixes: ["place.wisp."], theme: "yellow", node: wisp && <FeaturedWispSection data={wisp} /> },
-    { key: "vibeMeal", show: !!vibeMeal, prefixes: ["com.vibe-coded."], theme: "red", node: vibeMeal && <FeaturedVibeMealSection data={vibeMeal} /> },
-    { key: "brews", show: !!brews, prefixes: ["social.arabica.", "social.oolong."], theme: "orange", node: brews && <FeaturedBrewsSection data={brews} /> },
-    { key: "npmx", show: !!npmx, prefixes: ["dev.npmx."], theme: "red", node: npmx && <FeaturedNpmxSection data={npmx} /> },
-    { key: "marque", show: !!marque, prefixes: ["at.marque."], theme: "cobalt", node: marque && <FeaturedMarqueSection data={marque} /> },
-    { key: "atlas", show: !!atlas, prefixes: ["city.atlas."], theme: "mint", node: atlas && <FeaturedAtlasSection data={atlas} /> },
-    { key: "pollen", show: !!pollen, prefixes: ["place.pollen."], theme: "lime", node: pollen && <FeaturedPollenSection data={pollen} /> },
-    { key: "atmos", show: !!atmos, prefixes: ["email.atmos."], theme: "cobalt", node: atmos && <FeaturedAtmosSection data={atmos} /> },
-    { key: "aiConsent", show: !!aiConsent, prefixes: ["community.lexicon.preference."], theme: "red", node: aiConsent && <FeaturedAiConsentSection data={aiConsent} /> },
-    { key: "protoimsg", show: !!protoimsg, prefixes: ["app.protoimsg."], theme: "violet", node: protoimsg && <FeaturedProtoimsgSection data={protoimsg} /> },
-    { key: "keytrace", show: !!keytrace, prefixes: ["dev.keytrace."], theme: "mint", node: keytrace && <FeaturedKeytraceSection data={keytrace} /> },
-    { key: "endorse", show: !!endorse, prefixes: ["fund.at.graph."], theme: "lime", node: endorse && <FeaturedEndorseSection data={endorse} /> },
-    { key: "funding", show: !!funding, prefixes: ["fund.at.funding."], theme: "yellow", node: funding && <FeaturedFundingSection data={funding} /> },
-    { key: "blacksky", show: !!blacksky, prefixes: ["community.blacksky."], theme: "cobalt", node: blacksky && <FeaturedBlackskySection data={blacksky} /> },
-    { key: "fledglings", show: !!fledglings, prefixes: ["com.nrempel.fledglings."], theme: "lime", node: fledglings && <FeaturedFledglingsSection data={fledglings} /> },
-    { key: "atroom", show: !!atroom, prefixes: ["blue.atroom."], theme: "mint", node: atroom && <FeaturedAtRoomSection data={atroom} /> },
-    { key: "blento", show: !!blento, prefixes: ["app.blento."], theme: "pink", node: blento && <FeaturedBlentoSection data={blento} /> },
-    { key: "slides", show: !!slides, prefixes: ["tech.waow.slides."], theme: "orange", node: slides && <FeaturedSlidesSection data={slides} /> },
+    { key: "bluesky", show: !!bluesky, prefixes: ["app.bsky.", "chat.bsky."], render: (theme: SectionTheme) => bluesky ? <FeaturedBlueskySection theme={theme} data={bluesky} /> : null },
+    { key: "music", show: !!music, prefixes: ["app.rocksky.", "fm.teal.", "fm.plyr."], render: (theme: SectionTheme) => music ? <FeaturedMusicSection theme={theme} data={music} /> : null },
+    { key: "popfeed", show: !!popfeed, prefixes: ["social.popfeed."], render: (theme: SectionTheme) => popfeed ? <FeaturedPopfeedSection theme={theme} data={popfeed} did={stats.did} /> : null },
+    { key: "flashes", show: !!flashes, prefixes: ["blue.flashes."], render: (theme: SectionTheme) => flashes ? <FeaturedFlashesSection theme={theme} data={flashes} /> : null },
+    { key: "grain", show: !!grain, prefixes: ["social.grain."], render: (theme: SectionTheme) => grain ? <FeaturedGrainSection theme={theme} data={grain} /> : null },
+    { key: "reading", show: !!reading, prefixes: ["com.whtwnd.", "buzz.bookhive.", "pub.leaflet.", "at.margin.", "at.monomarks.", "my.skylights."], render: (theme: SectionTheme) => reading ? <FeaturedReadingSection theme={theme} data={reading} /> : null },
+    { key: "standardDocs", show: !!standardDocs, prefixes: ["site.standard."], render: (theme: SectionTheme) => standardDocs ? <FeaturedStandardDocsSection theme={theme} data={standardDocs} /> : null },
+    { key: "sifa", show: !!sifa, prefixes: ["id.sifa."], render: (theme: SectionTheme) => sifa ? <FeaturedSifaSection theme={theme} data={sifa} /> : null },
+    { key: "status", show: !!status, prefixes: ["is.dame.", "xyz.statusphere.", "vg.nat.istat.", "social.kibun.", "io.zzstoatzz.status."], render: (theme: SectionTheme) => status ? <FeaturedStatusSection theme={theme} data={status} /> : null },
+    { key: "psky", show: !!psky, prefixes: ["social.psky."], render: (theme: SectionTheme) => psky ? <FeaturedPskySection theme={theme} data={psky} /> : null },
+    { key: "streamplace", show: !!streamplace, prefixes: ["place.stream."], render: (theme: SectionTheme) => streamplace ? <FeaturedStreamplaceSection theme={theme} data={streamplace} /> : null },
+    { key: "tangled", show: !!tangled, prefixes: ["sh.tangled."], render: (theme: SectionTheme) => tangled ? <FeaturedTangledSection theme={theme} data={tangled} /> : null },
+    { key: "anisota", show: !!anisota, prefixes: ["net.anisota."], render: (theme: SectionTheme) => anisota ? <FeaturedAnisotaSection theme={theme} data={anisota} /> : null },
+    { key: "games", show: !!games, prefixes: ["blue.2048.", "games.firehose.", "farm.smol.games.", "tools.atp.", "com.imlunahey.leaderboard."], render: (theme: SectionTheme) => games ? <FeaturedGamesSection theme={theme} data={games} /> : null },
+    { key: "rpg", show: !!rpg, prefixes: ["actor.rpg.", "equipment.rpg."], render: (theme: SectionTheme) => rpg ? <FeaturedRpgSection theme={theme} data={rpg} /> : null },
+    { key: "atbuddy", show: !!atbuddy, prefixes: ["app.atbuddy."], render: (theme: SectionTheme) => atbuddy ? <FeaturedAtBuddySection theme={theme} data={atbuddy} /> : null },
+    { key: "atsumeat", show: !!atsumeat, prefixes: ["com.suibari.atsumeat."], render: (theme: SectionTheme) => atsumeat ? <FeaturedAtsumeatSection theme={theme} data={atsumeat} /> : null },
+    { key: "stickers", show: !!stickers, prefixes: ["boo.sky."], render: (theme: SectionTheme) => stickers ? <FeaturedStickersSection theme={theme} data={stickers} /> : null },
+    { key: "badges", show: !!badges, prefixes: ["blue.badge."], render: (theme: SectionTheme) => badges ? <FeaturedBadgesSection theme={theme} data={badges} /> : null },
+    { key: "bluePlace", show: !!bluePlace, prefixes: ["blue.place."], render: (theme: SectionTheme) => bluePlace ? <FeaturedBluePlaceSection theme={theme} data={bluePlace} /> : null },
+    { key: "spores", show: !!spores, prefixes: ["coop.hypha.spores."], render: (theme: SectionTheme) => spores ? <FeaturedSporesSection theme={theme} data={spores} /> : null },
+    { key: "smokesignal", show: !!smokesignal, prefixes: ["events.smokesignal."], render: (theme: SectionTheme) => smokesignal ? <FeaturedSmokeSignalSection theme={theme} data={smokesignal} /> : null },
+    { key: "calendar", show: !!calendar, prefixes: ["community.lexicon.calendar."], render: (theme: SectionTheme) => calendar ? <FeaturedCalendarSection theme={theme} data={calendar} /> : null },
+    { key: "youandme", show: !!youandme, prefixes: ["at.youandme."], render: (theme: SectionTheme) => youandme ? <FeaturedYouAndMeSection theme={theme} data={youandme} /> : null },
+    { key: "highFive", show: !!highFive, prefixes: ["com.atprotofans.high-five."], render: (theme: SectionTheme) => highFive ? <FeaturedHighFiveSection theme={theme} data={highFive} /> : null },
+    { key: "atvouch", show: !!atvouch, prefixes: ["dev.atvouch."], render: (theme: SectionTheme) => atvouch ? <FeaturedAtVouchSection theme={theme} data={atvouch} /> : null },
+    { key: "atpoke", show: !!atpoke, prefixes: ["xyz.atpoke."], render: (theme: SectionTheme) => atpoke ? <FeaturedAtPokeSection theme={theme} data={atpoke} /> : null },
+    { key: "intros", show: !!intros, prefixes: ["com.skybemoreblue."], render: (theme: SectionTheme) => intros ? <FeaturedIntrosSection theme={theme} data={intros} /> : null },
+    { key: "sparks", show: !!sparks, prefixes: ["tech.tokimeki.takibi."], render: (theme: SectionTheme) => sparks ? <FeaturedSparksSection theme={theme} data={sparks} /> : null },
+    { key: "blips", show: !!blips, prefixes: ["stream.thought."], render: (theme: SectionTheme) => blips ? <FeaturedBlipsSection theme={theme} data={blips} /> : null },
+    { key: "asq", show: !!asq, prefixes: ["fyi.asq."], render: (theme: SectionTheme) => asq ? <FeaturedAsqSection theme={theme} data={asq} /> : null },
+    { key: "drydown", show: !!drydown, prefixes: ["social.drydown."], render: (theme: SectionTheme) => drydown ? <FeaturedDrydownSection theme={theme} data={drydown} /> : null },
+    { key: "frontpage", show: !!frontpage, prefixes: ["fyi.unravel.frontpage."], render: (theme: SectionTheme) => frontpage ? <FeaturedFrontpageSection theme={theme} data={frontpage} /> : null },
+    { key: "flushing", show: !!flushing, prefixes: ["im.flushing."], render: (theme: SectionTheme) => flushing ? <FeaturedFlushingSection theme={theme} data={flushing} /> : null },
+    { key: "sidetrail", show: !!sidetrail, prefixes: ["app.sidetrail."], render: (theme: SectionTheme) => sidetrail ? <FeaturedSidetrailSection theme={theme} data={sidetrail} /> : null },
+    { key: "tokimekiPolls", show: !!tokimekiPolls, prefixes: ["tech.tokimeki.poll."], render: (theme: SectionTheme) => tokimekiPolls ? <FeaturedTokimekiPollsSection theme={theme} data={tokimekiPolls} /> : null },
+    { key: "wishlist", show: !!wishlist, prefixes: ["blue.registry."], render: (theme: SectionTheme) => wishlist ? <FeaturedWishlistSection theme={theme} data={wishlist} /> : null },
+    { key: "atstore", show: !!atstore, prefixes: ["fyi.atstore."], render: (theme: SectionTheme) => atstore ? <FeaturedAtStoreSection theme={theme} data={atstore} /> : null },
+    { key: "atguilds", show: !!atguilds, prefixes: ["dev.jakestout.atguilds."], render: (theme: SectionTheme) => atguilds ? <FeaturedAtGuildsSection theme={theme} data={atguilds} /> : null },
+    { key: "linkring", show: !!linkring, prefixes: ["lol.linkring."], render: (theme: SectionTheme) => linkring ? <FeaturedLinkringSection theme={theme} data={linkring} /> : null },
+    { key: "atcircle", show: !!atcircle, prefixes: ["net.asadaame5121.at-circle."], render: (theme: SectionTheme) => atcircle ? <FeaturedAtCircleSection theme={theme} data={atcircle} /> : null },
+    { key: "rankthat", show: !!rankthat, prefixes: ["net.rankthat."], render: (theme: SectionTheme) => rankthat ? <FeaturedRankthatSection theme={theme} data={rankthat} /> : null },
+    { key: "cosmik", show: !!cosmik, prefixes: ["network.cosmik."], render: (theme: SectionTheme) => cosmik ? <FeaturedCosmikSection theme={theme} data={cosmik} /> : null },
+    { key: "attodo", show: !!attodo, prefixes: ["app.attodo."], render: (theme: SectionTheme) => attodo ? <FeaturedAtToDoSection theme={theme} data={attodo} /> : null },
+    { key: "skyboard", show: !!skyboard, prefixes: ["dev.skyboard."], render: (theme: SectionTheme) => skyboard ? <FeaturedSkyboardSection theme={theme} data={skyboard} /> : null },
+    { key: "skytalk", show: !!skytalk, prefixes: ["blue.skytalk."], render: (theme: SectionTheme) => skytalk ? <FeaturedSkytalkSection theme={theme} data={skytalk} /> : null },
+    { key: "madebydannyCdn", show: !!madebydannyCdn, prefixes: ["uk.madebydanny."], render: (theme: SectionTheme) => madebydannyCdn ? <FeaturedMadebydannyCdnSection theme={theme} data={madebydannyCdn} /> : null },
+    { key: "flobitImages", show: !!flobitImages, prefixes: ["dev.flo-bit."], render: (theme: SectionTheme) => flobitImages ? <FeaturedFlobitImagesSection theme={theme} data={flobitImages} /> : null },
+    { key: "sonasky", show: !!sonasky, prefixes: ["app.sonasky."], render: (theme: SectionTheme) => sonasky ? <FeaturedSonaskySection theme={theme} data={sonasky} /> : null },
+    { key: "simocracy", show: !!simocracy, prefixes: ["org.simocracy."], render: (theme: SectionTheme) => simocracy ? <FeaturedSimocracySection theme={theme} data={simocracy} /> : null },
+    { key: "wisp", show: !!wisp, prefixes: ["place.wisp."], render: (theme: SectionTheme) => wisp ? <FeaturedWispSection theme={theme} data={wisp} /> : null },
+    { key: "vibeMeal", show: !!vibeMeal, prefixes: ["com.vibe-coded."], render: (theme: SectionTheme) => vibeMeal ? <FeaturedVibeMealSection theme={theme} data={vibeMeal} /> : null },
+    { key: "brews", show: !!brews, prefixes: ["social.arabica.", "social.oolong."], render: (theme: SectionTheme) => brews ? <FeaturedBrewsSection theme={theme} data={brews} /> : null },
+    { key: "npmx", show: !!npmx, prefixes: ["dev.npmx."], render: (theme: SectionTheme) => npmx ? <FeaturedNpmxSection theme={theme} data={npmx} /> : null },
+    { key: "marque", show: !!marque, prefixes: ["at.marque."], render: (theme: SectionTheme) => marque ? <FeaturedMarqueSection theme={theme} data={marque} /> : null },
+    { key: "atlas", show: !!atlas, prefixes: ["city.atlas."], render: (theme: SectionTheme) => atlas ? <FeaturedAtlasSection theme={theme} data={atlas} /> : null },
+    { key: "pollen", show: !!pollen, prefixes: ["place.pollen."], render: (theme: SectionTheme) => pollen ? <FeaturedPollenSection theme={theme} data={pollen} /> : null },
+    { key: "atmos", show: !!atmos, prefixes: ["email.atmos."], render: (theme: SectionTheme) => atmos ? <FeaturedAtmosSection theme={theme} data={atmos} /> : null },
+    { key: "aiConsent", show: !!aiConsent, prefixes: ["community.lexicon.preference."], render: (theme: SectionTheme) => aiConsent ? <FeaturedAiConsentSection theme={theme} data={aiConsent} /> : null },
+    { key: "protoimsg", show: !!protoimsg, prefixes: ["app.protoimsg."], render: (theme: SectionTheme) => protoimsg ? <FeaturedProtoimsgSection theme={theme} data={protoimsg} /> : null },
+    { key: "keytrace", show: !!keytrace, prefixes: ["dev.keytrace."], render: (theme: SectionTheme) => keytrace ? <FeaturedKeytraceSection theme={theme} data={keytrace} /> : null },
+    { key: "endorse", show: !!endorse, prefixes: ["fund.at.graph."], render: (theme: SectionTheme) => endorse ? <FeaturedEndorseSection theme={theme} data={endorse} /> : null },
+    { key: "funding", show: !!funding, prefixes: ["fund.at.funding."], render: (theme: SectionTheme) => funding ? <FeaturedFundingSection theme={theme} data={funding} /> : null },
+    { key: "blacksky", show: !!blacksky, prefixes: ["community.blacksky."], render: (theme: SectionTheme) => blacksky ? <FeaturedBlackskySection theme={theme} data={blacksky} /> : null },
+    { key: "fledglings", show: !!fledglings, prefixes: ["com.nrempel.fledglings."], render: (theme: SectionTheme) => fledglings ? <FeaturedFledglingsSection theme={theme} data={fledglings} /> : null },
+    { key: "atroom", show: !!atroom, prefixes: ["blue.atroom."], render: (theme: SectionTheme) => atroom ? <FeaturedAtRoomSection theme={theme} data={atroom} /> : null },
+    { key: "blento", show: !!blento, prefixes: ["app.blento."], render: (theme: SectionTheme) => blento ? <FeaturedBlentoSection theme={theme} data={blento} /> : null },
+    { key: "slides", show: !!slides, prefixes: ["tech.waow.slides."], render: (theme: SectionTheme) => slides ? <FeaturedSlidesSection theme={theme} data={slides} /> : null },
   ];
   const features: Feature[] = candidates
-    .filter((c) => c.show && c.node)
+    .filter((c) => c.show)
     .map((c) => ({
       key: c.key,
       count: countForPrefixes(allBuckets, c.prefixes),
-      theme: c.theme,
-      node: c.node,
+      render: c.render,
     }))
     .sort((a, b) => b.count - a.count);
 
-  // Strict activity-count ordering. The user's top service should always
-  // come first, period — we don't sacrifice that to break up same-color
-  // adjacency. (The bucket-heap approach prioritized whichever theme had
-  // the most sections, which pushed Bluesky-power-users' Bluesky section
-  // below smaller-count services that happened to share a theme.)
-  const ordered = features;
+  // Strict activity-count ordering. The user's top service appears first,
+  // and section background colors come from a fixed cycle by *position*
+  // rather than per-service. That way the spectrum stays balanced no
+  // matter which sections render for a given account, and adjacent
+  // sections never share a color even after the sort.
+  const ordered = features.map((f, i) => ({
+    ...f,
+    theme: CYCLE_THEMES[i % CYCLE_THEMES.length],
+  }));
 
   async function onShare() {
     return shareWrappedUrl(stats.handle);
@@ -366,7 +370,7 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
       <StickyNav handle={stats.handle} onShare={onShare} />
       <IntroSlide stats={stats} topServices={topServices} onShare={onShare} />
       {ordered.map((f) => (
-        <Fragment key={f.key}>{f.node}</Fragment>
+        <Fragment key={f.key}>{f.render(f.theme)}</Fragment>
       ))}
       {tail.length > 0 && <TailSection items={tail} />}
       <FooterStrip stats={stats} />

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { SmokeSignalHighlights } from "../../lib/featured";
 import { fetchRecordByUri } from "../../lib/highlights/_atUri";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
 type RemoteEvent = {
   name: string;
@@ -42,9 +43,12 @@ function formatDateTime(d: Date): string {
 
 export function FeaturedSmokeSignalSection({
   data,
+  theme,
 }: {
   data: SmokeSignalHighlights;
+  theme?: SectionTheme;
 }) {
+  const t = sectionTheme(theme ?? "red");
   const rsvpStats = Array.from(data.rsvpsByStatus.entries()).sort(
     (a, b) => b[1] - a[1],
   );
@@ -61,7 +65,7 @@ export function FeaturedSmokeSignalSection({
   const remoteEvents = eventsQuery.data ?? new Map<string, RemoteEvent>();
 
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-red text-cream">
+    <section className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}>
       <div className="grain absolute inset-0 opacity-[0.04]" />
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">

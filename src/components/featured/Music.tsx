@@ -2,8 +2,16 @@ import type { MusicHighlights } from "../../lib/featured";
 import { Cover } from "../Cover";
 import { initial } from "../../lib/format";
 import { FeaturedRow } from "./_shared";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
-export function FeaturedMusicSection({ data }: { data: MusicHighlights }) {
+export function FeaturedMusicSection({
+  data,
+  theme,
+}: {
+  data: MusicHighlights;
+  theme?: SectionTheme;
+}) {
+  const t = sectionTheme(theme ?? "orange");
   const sourceParts: string[] = [];
   if (data.rockskyCount > 0)
     sourceParts.push(`${data.rockskyCount.toLocaleString()} from Rocksky`);
@@ -18,7 +26,7 @@ export function FeaturedMusicSection({ data }: { data: MusicHighlights }) {
   const sourceCopy = sourceParts.join("  ·  ");
 
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-orange text-ink">
+    <section className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}>
       <div className="grain absolute inset-0" />
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">

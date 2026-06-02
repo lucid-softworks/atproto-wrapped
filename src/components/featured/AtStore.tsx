@@ -8,6 +8,7 @@ import {
 import { Cover } from "../Cover";
 import { initial } from "../../lib/format";
 import { FeaturedRow } from "./_shared";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
 type RemoteListing = {
   uri: string;
@@ -74,9 +75,12 @@ async function fetchListings(
 
 export function FeaturedAtStoreSection({
   data,
+  theme,
 }: {
   data: AtStoreHighlights;
+  theme?: SectionTheme;
 }) {
+  const t = sectionTheme(theme ?? "pink");
   const stats: Array<[string, string]> = [];
   if (data.favoritesCount > 0)
     stats.push(["Favorites", data.favoritesCount.toLocaleString()]);
@@ -100,7 +104,9 @@ export function FeaturedAtStoreSection({
   const listings = listingsQuery.data ?? new Map<string, RemoteListing>();
 
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-pink text-ink">
+    <section
+      className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}
+    >
       <div className="grain absolute inset-0" />
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">

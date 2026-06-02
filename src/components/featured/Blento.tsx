@@ -2,6 +2,7 @@ import type {
   BlentoCard,
   BlentoHighlights,
 } from "../../lib/highlights/blento";
+import { sectionTheme, type SectionTheme } from "./_theme";
 
 const TYPE_LABELS: Record<string, string> = {
   rpgActor: "RPG Actor",
@@ -24,15 +25,20 @@ function prettyType(type: string): string {
 
 export function FeaturedBlentoSection({
   data,
+  theme,
 }: {
   data: BlentoHighlights;
+  theme?: SectionTheme;
 }) {
+  const t = sectionTheme(theme ?? "pink");
   const types = Array.from(data.byType.entries()).sort(
     (a, b) => b[1] - a[1],
   );
 
   return (
-    <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-pink text-ink">
+    <section
+      className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}
+    >
       <div className="grain absolute inset-0" />
       <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">
