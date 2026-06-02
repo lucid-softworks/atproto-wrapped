@@ -67,6 +67,13 @@ import { getAtmosHighlights } from "../lib/highlights/atmos";
 import { getAiConsentHighlights } from "../lib/highlights/aiConsent";
 import { getProtoimsgHighlights } from "../lib/highlights/protoimsg";
 import { getKeytraceHighlights } from "../lib/highlights/keytrace";
+import { getEndorseHighlights } from "../lib/highlights/endorse";
+import { getFundingHighlights } from "../lib/highlights/funding";
+import { getBlackskyHighlights } from "../lib/highlights/blacksky";
+import { getFledglingsHighlights } from "../lib/highlights/fledglings";
+import { getAtRoomHighlights } from "../lib/highlights/atroom";
+import { getBlentoHighlights } from "../lib/highlights/blento";
+import { getSlidesHighlights } from "../lib/highlights/slides";
 import { StickyNav } from "./wrapped/Nav";
 import { IntroSlide } from "./wrapped/Intro";
 import { TailSection } from "./wrapped/Tail";
@@ -132,6 +139,13 @@ import { FeaturedAtmosSection } from "./featured/Atmos";
 import { FeaturedAiConsentSection } from "./featured/AiConsent";
 import { FeaturedProtoimsgSection } from "./featured/Protoimsg";
 import { FeaturedKeytraceSection } from "./featured/Keytrace";
+import { FeaturedEndorseSection } from "./featured/Endorse";
+import { FeaturedFundingSection } from "./featured/Funding";
+import { FeaturedBlackskySection } from "./featured/Blacksky";
+import { FeaturedFledglingsSection } from "./featured/Fledglings";
+import { FeaturedAtRoomSection } from "./featured/AtRoom";
+import { FeaturedBlentoSection } from "./featured/Blento";
+import { FeaturedSlidesSection } from "./featured/Slides";
 
 type Bucket = { nsid: string; count: number };
 
@@ -234,6 +248,13 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
   const aiConsent = getAiConsentHighlights(stats.byCollection);
   const protoimsg = getProtoimsgHighlights(stats.byCollection);
   const keytrace = getKeytraceHighlights(stats.byCollection);
+  const endorse = getEndorseHighlights(stats.byCollection);
+  const funding = getFundingHighlights(stats.byCollection);
+  const blacksky = getBlackskyHighlights(stats.byCollection);
+  const fledglings = getFledglingsHighlights(stats.byCollection);
+  const atroom = getAtRoomHighlights(stats);
+  const blento = getBlentoHighlights(stats.byCollection);
+  const slides = getSlidesHighlights(stats.byCollection);
 
   // Build the spotlight list — each entry is a featured section that only
   // appears when its highlight is non-null. We then sort by how many records
@@ -311,6 +332,13 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
     { key: "aiConsent", show: !!aiConsent, prefixes: ["community.lexicon.preference."], theme: "red", node: aiConsent && <FeaturedAiConsentSection data={aiConsent} /> },
     { key: "protoimsg", show: !!protoimsg, prefixes: ["app.protoimsg."], theme: "violet", node: protoimsg && <FeaturedProtoimsgSection data={protoimsg} /> },
     { key: "keytrace", show: !!keytrace, prefixes: ["dev.keytrace."], theme: "mint", node: keytrace && <FeaturedKeytraceSection data={keytrace} /> },
+    { key: "endorse", show: !!endorse, prefixes: ["fund.at.graph."], theme: "lime", node: endorse && <FeaturedEndorseSection data={endorse} /> },
+    { key: "funding", show: !!funding, prefixes: ["fund.at.funding."], theme: "yellow", node: funding && <FeaturedFundingSection data={funding} /> },
+    { key: "blacksky", show: !!blacksky, prefixes: ["community.blacksky."], theme: "cobalt", node: blacksky && <FeaturedBlackskySection data={blacksky} /> },
+    { key: "fledglings", show: !!fledglings, prefixes: ["com.nrempel.fledglings."], theme: "lime", node: fledglings && <FeaturedFledglingsSection data={fledglings} /> },
+    { key: "atroom", show: !!atroom, prefixes: ["blue.atroom."], theme: "mint", node: atroom && <FeaturedAtRoomSection data={atroom} /> },
+    { key: "blento", show: !!blento, prefixes: ["app.blento."], theme: "pink", node: blento && <FeaturedBlentoSection data={blento} /> },
+    { key: "slides", show: !!slides, prefixes: ["tech.waow.slides."], theme: "orange", node: slides && <FeaturedSlidesSection data={slides} /> },
   ];
   const features: Feature[] = candidates
     .filter((c) => c.show && c.node)

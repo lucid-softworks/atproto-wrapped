@@ -127,6 +127,19 @@ export const FEATURED_NSID_PREFIXES: string[] = [
   "app.protoimsg.",
   // keytrace identity claims (orcid, tangled, etc.)
   "dev.keytrace.",
+  // fund.at — endorsements + funding plans/channels (fund.at.actor.*
+  // declarations are still filtered out via SKIP_NSID_PREFIXES below)
+  "fund.at.",
+  // blacksky community assembly
+  "community.blacksky.",
+  // nrempel fledglings (creature care)
+  "com.nrempel.fledglings.",
+  // atroom 3D virtual rooms
+  "blue.atroom.",
+  // blento bento card boards
+  "app.blento.",
+  // tech.waow slide decks
+  "tech.waow.slides.",
 ];
 
 /**
