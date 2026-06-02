@@ -6,7 +6,11 @@ import {
   getDidDocument,
   getPdsEndpoint,
 } from "../../lib/atproto";
-import { buildOgPosterSvg } from "../../lib/ogPoster";
+import { describeCollection } from "../../lib/labels";
+import {
+  buildOgPosterSvg,
+  type OgServiceTile,
+} from "../../lib/ogPoster";
 
 let wasmInit: Promise<void> | null = null;
 let fontBuffersPromise: Promise<Uint8Array[]> | null = null;
@@ -67,16 +71,38 @@ function collectionsToServices(collections: string[]): string[] {
   return Array.from(services).sort();
 }
 
+function buildTopServiceTiles(collections: string[]): OgServiceTile[] {
+  // Group lexicons by service name (via describeCollection). We can't show
+  // record counts here without a CAR fetch, so the tile reads as e.g.
+  // "BLUESKY · 14 · lexicons" — the count and label are still personalized
+  // to the handle's actual top services.
+  const groups = new Map<string, number>();
+  collections.forEach((nsid, idx) => {
+    const d = describeCollection(nsid, idx);
+    groups.set(d.service, (groups.get(d.service) ?? 0) + 1);
+  });
+  return Array.from(groups.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([service, count]) => ({
+      label: service.toUpperCase(),
+      count,
+      word: count === 1 ? "lexicon" : "lexicons",
+    }));
+}
+
 async function renderSvg(handle: string): Promise<string> {
   const did = await resolveHandle(handle);
   const didDoc = await getDidDocument(did);
   const pds = getPdsEndpoint(didDoc);
   const collections = await listCollections(pds, did);
   const services = collectionsToServices(collections);
+  const topServices = buildTopServiceTiles(collections);
   return buildOgPosterSvg({
     handle,
     collectionCount: collections.length,
     services,
+    topServices,
   });
 }
 

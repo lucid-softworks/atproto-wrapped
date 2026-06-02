@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/og-imlunahey.svg" alt="@imlunahey.com's ATproto Wrapped poster" width="900" />
+  <img src="docs/og-imlunahey.png" alt="@imlunahey.com's ATproto Wrapped poster" width="900" />
 </p>
 
 # ATproto Wrapped
@@ -11,8 +11,9 @@ posts, likes, scrobbles, oekaki, blog entries, the long-tail stuff — into a
 magazine-style spread.
 
 Sharing a wrap produces a `/@<handle>` URL that unfurls with a server-rendered
-OG card. The card above is exactly what would be served at
-`/og/imlunahey.com?format=svg`.
+OG card. The card above is the exact PNG served at `/og/imlunahey.com` —
+top services and counts are computed live from the handle's repo via
+`com.atproto.repo.describeRepo`.
 
 ## Stack
 
@@ -74,8 +75,9 @@ src/
 
 ## OG image endpoint
 
-`GET /og/<handle>` returns a 1200×630 PNG. Add `?format=svg` to get the raw SVG
-(useful for design tweaks or, like the top of this README, including in docs).
+`GET /og/<handle>` returns a 1200×630 PNG. Add `?format=svg` to get the raw
+SVG (handy for design tweaks; the README above uses the PNG so it ships with
+the designer fonts baked in).
 
 Fonts (Bricolage Grotesque, Instrument Serif Italic, JetBrains Mono Medium)
 are fetched from jsdelivr once per worker isolate. Rendered PNGs are cached in

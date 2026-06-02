@@ -60,13 +60,7 @@ import { FeaturedFlushingSection } from "./featured/Flushing";
 const TOP_SLIDES = 6;
 const BENTO_COUNT = 9;
 
-export function Wrapped({
-  stats,
-  onReset,
-}: {
-  stats: RepoStats;
-  onReset: () => void;
-}) {
+export function Wrapped({ stats }: { stats: RepoStats }) {
   const allBuckets = Array.from(stats.byCollection.entries())
     .map(([nsid, records], idx) => {
       const descriptor = describeCollection(nsid, idx);
@@ -121,7 +115,7 @@ export function Wrapped({
 
   return (
     <div className="min-h-svh bg-cream text-ink">
-      <StickyNav handle={stats.handle} onReset={onReset} onShare={onShare} />
+      <StickyNav handle={stats.handle} onShare={onShare} />
       <IntroSlide stats={stats} topServices={topServices} onShare={onShare} />
       {bluesky && <FeaturedBlueskySection data={bluesky} />}
       {topSlides.map((b, i) => (

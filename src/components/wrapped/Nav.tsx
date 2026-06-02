@@ -1,12 +1,11 @@
+import { Link } from "@tanstack/react-router";
 import { ShareButton } from "./ShareButton";
 
 export function StickyNav({
   handle,
-  onReset,
   onShare,
 }: {
   handle: string;
-  onReset: () => void;
   onShare: () => Promise<"shared" | "copied" | "failed">;
 }) {
   return (
@@ -23,12 +22,12 @@ export function StickyNav({
         </div>
         <div className="flex items-center gap-2">
           <ShareButton onShare={onShare} variant="small" />
-          <button
-            onClick={onReset}
+          <Link
+            to="/"
             className="rounded-full border-2 border-ink bg-cream px-4 py-1.5 font-mono text-xs tracking-widest uppercase shadow-[3px_3px_0_0_var(--color-ink)] transition hover:bg-wrap-pink"
           >
             Try another →
-          </button>
+          </Link>
         </div>
       </div>
     </div>

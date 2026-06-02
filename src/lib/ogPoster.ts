@@ -11,86 +11,165 @@ function esc(s: string): string {
 
 function fitHandleSize(handle: string): number {
   const len = handle.length + 1;
-  if (len <= 12) return 130;
-  if (len <= 16) return 108;
-  if (len <= 22) return 84;
-  if (len <= 28) return 68;
+  if (len <= 12) return 124;
+  if (len <= 16) return 104;
+  if (len <= 22) return 82;
+  if (len <= 28) return 66;
   return 52;
 }
 
-function buildServiceStrip(services: string[]): string {
-  const MAX = 90;
-  const chosen: string[] = [];
-  let len = 0;
-  for (const s of services) {
-    const next = chosen.length === 0 ? s.length : len + 3 + s.length;
-    if (next > MAX) break;
-    chosen.push(s);
-    len = next;
-  }
-  const remainder = services.length - chosen.length;
-  const joined = chosen.join("  ·  ");
-  const tail = remainder > 0 ? `   +${remainder} more` : "";
-  return joined + tail;
-}
+export type OgServiceTile = {
+  label: string;
+  count: number;
+  word: string;
+};
 
 export type OgPosterInput = {
   handle: string;
   collectionCount: number;
   services: string[];
+  topServices: OgServiceTile[];
 };
+
+const TILE_THEME = {
+  cobalt: { bg: "#1e4dff", fg: "#f1ead9", muted: "#d4ccb6" },
+  mint: { bg: "#7df0b0", fg: "#0a0a0a", muted: "#1a4a2d" },
+  orange: { bg: "#ff6a3d", fg: "#0a0a0a", muted: "#3d1f12" },
+} as const;
+
+function floatingTile(
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  rotate: number,
+  tile: OgServiceTile,
+  theme: keyof typeof TILE_THEME,
+): string {
+  const t = TILE_THEME[theme];
+  const cx = x + w / 2;
+  const cy = y + h / 2;
+  return `
+  <g transform="rotate(${rotate} ${cx} ${cy})">
+    <rect x="${x + 6}" y="${y + 6}" width="${w}" height="${h}" rx="16" fill="#0a0a0a" />
+    <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="16" fill="${t.bg}" stroke="#0a0a0a" stroke-width="3" />
+    <text x="${x + 18}" y="${y + 28}" font-family="JetBrains Mono, ui-monospace, monospace" font-size="11" letter-spacing="2" fill="${t.muted}">${esc(tile.label)}</text>
+    <text x="${x + 18}" y="${y + 78}" font-family="Bricolage Grotesque, Arial Black, sans-serif" font-weight="800" font-size="40" letter-spacing="-1" fill="${t.fg}">${esc(tile.count.toLocaleString())}</text>
+    <text x="${x + 18}" y="${y + 102}" font-family="Instrument Serif, Georgia, serif" font-style="italic" font-size="15" fill="${t.muted}">${esc(tile.word)}</text>
+  </g>`;
+}
+
+function buildMarqueeSpans(services: string[]): string {
+  if (services.length === 0) return "";
+  // Mono-text width budget at ~14px / letter-spacing 3 fits roughly 80
+  // characters across the W-120 canvas with a small right-margin.
+  const MAX_CHARS = 80;
+  const sep = "  ";
+  const star = "•  ";
+  let used = 0;
+  const chosen: string[] = [];
+  for (const s of services) {
+    const piece = star + s.toUpperCase();
+    const next = used + (chosen.length === 0 ? piece.length : piece.length + sep.length);
+    if (next > MAX_CHARS) break;
+    chosen.push(piece);
+    used = next;
+  }
+  const remainder = services.length - chosen.length;
+  const tail = remainder > 0 ? `${sep}+${remainder} more` : "";
+  // Bullets get a lime accent; the rest stays cream.
+  return (
+    chosen
+      .map(
+        (piece) =>
+          `<tspan fill="#d8ff4d">•</tspan><tspan>${esc(piece.slice(1))}</tspan>`,
+      )
+      .join(sep) + (tail ? `<tspan opacity="0.6">${esc(tail)}</tspan>` : "")
+  );
+}
 
 export function buildOgPosterSvg(input: OgPosterInput): string {
   const handle = `@${input.handle}`;
   const handleSize = fitHandleSize(handle);
-  const eyebrowY = 200;
-  const handleY = eyebrowY + handleSize + 12;
-  const wrappedSize = 76;
-  const wrappedY = handleY + wrappedSize + 8;
-  const subtitleY = wrappedY + 44;
-  const stripY = H - 56;
 
-  const subtitle = input.collectionCount
-    ? `${input.collectionCount.toLocaleString()} lexicons across the ATmosphere`
-    : "a year on the ATmosphere";
+  const topBarY = 82;
+  const dividerY = 116;
+  const eyebrowY = 184;
+  const handleY = eyebrowY + handleSize + 10;
+  const wrappedSize = 70;
+  const wrappedY = handleY + wrappedSize + 2;
+  const subtitleY = wrappedY + 38;
 
-  const serviceStrip = buildServiceStrip(input.services);
+  const marqueeH = 56;
+  const marqueeY = H - marqueeH;
+
+  const subtitle = `${input.collectionCount.toLocaleString()} lexicons across the ATmosphere`;
+
+  // Floating tiles on the right — positions, sizes, and rotations mirror
+  // FloatingTiles in src/components/Landing.tsx so the OG card "rhymes"
+  // with the landing page when someone clicks through.
+  const tileW = 180;
+  const tileH = 120;
+  const tilePositions: Array<{ x: number; y: number; rotate: number }> = [
+    { x: 960, y: 150, rotate: 6 },
+    { x: 905, y: 290, rotate: -4 },
+    { x: 980, y: 410, rotate: 3 },
+  ];
+  const tileThemes: Array<keyof typeof TILE_THEME> = [
+    "cobalt",
+    "mint",
+    "orange",
+  ];
+  const tiles = input.topServices.slice(0, 3);
+  const tilesSvg = tiles
+    .map((tile, i) => {
+      const pos = tilePositions[i];
+      return floatingTile(
+        pos.x,
+        pos.y,
+        tileW,
+        tileH,
+        pos.rotate,
+        tile,
+        tileThemes[i],
+      );
+    })
+    .join("\n");
+
+  const marqueeSpans = buildMarqueeSpans(input.services);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <rect width="${W}" height="${H}" fill="#f1ead9" />
 
-  <!-- decorative corner blocks (stay clear of the handle text area) -->
-  <rect x="${W - 220}" y="${H - 200}" width="180" height="120" rx="14" fill="#d8ff4d" stroke="#0a0a0a" stroke-width="3" />
-  <rect x="${W - 200}" y="180" width="140" height="90" rx="14" fill="#4dd4ff" stroke="#0a0a0a" stroke-width="3" />
-
   <!-- top bar -->
-  <g transform="translate(60 90)">
+  <g transform="translate(60 ${topBarY})">
     <circle cx="9" cy="0" r="9" fill="#ff4d97" />
     <text x="28" y="6" font-family="JetBrains Mono, ui-monospace, monospace" font-size="18" font-weight="500" letter-spacing="2" fill="#0a0a0a">ATPROTO·WRAPPED</text>
-    <text x="${W - 120}" y="6" font-family="JetBrains Mono, ui-monospace, monospace" font-size="16" letter-spacing="2.5" fill="#0a0a0a" opacity="0.55" text-anchor="end">ISSUE 01</text>
+    <text x="${W - 120}" y="6" font-family="JetBrains Mono, ui-monospace, monospace" font-size="14" letter-spacing="3" fill="#0a0a0a" opacity="0.5" text-anchor="end">ISSUE 01 · THE ATMOSPHERE EDITION</text>
   </g>
-  <line x1="60" y1="124" x2="${W - 60}" y2="124" stroke="#0a0a0a" stroke-opacity="0.18" stroke-width="2" />
+  <line x1="60" y1="${dividerY}" x2="${W - 60}" y2="${dividerY}" stroke="#0a0a0a" stroke-opacity="0.15" stroke-width="2" />
 
   <!-- eyebrow -->
-  <text x="60" y="${eyebrowY}" font-family="Instrument Serif, Georgia, serif" font-style="italic" font-size="48" fill="#0a0a0a" opacity="0.7">A year of</text>
+  <text x="60" y="${eyebrowY}" font-family="Instrument Serif, Georgia, serif" font-style="italic" font-size="46" fill="#0a0a0a" opacity="0.7">A year of</text>
 
-  <!-- handle giant -->
+  <!-- giant handle -->
   <text x="60" y="${handleY}" font-family="Bricolage Grotesque, Arial Black, sans-serif" font-weight="800" font-size="${handleSize}" letter-spacing="-3" fill="#0a0a0a">${esc(handle)}</text>
 
   <!-- wrapped italic -->
   <text x="60" y="${wrappedY}" font-family="Instrument Serif, Georgia, serif" font-style="italic" font-size="${wrappedSize}" fill="#0a0a0a">wrapped.</text>
 
   <!-- subtitle -->
-  <text x="60" y="${subtitleY}" font-family="JetBrains Mono, ui-monospace, monospace" font-size="20" fill="#0a0a0a" opacity="0.65" letter-spacing="1">${esc(subtitle)}</text>
+  <text x="60" y="${subtitleY}" font-family="JetBrains Mono, ui-monospace, monospace" font-size="16" letter-spacing="1" fill="#0a0a0a" opacity="0.65">${esc(subtitle)}</text>
 
-  <!-- service strip -->
+  <!-- floating service tiles -->
+  ${tilesSvg}
+
+  <!-- marquee strip (matches Landing.tsx Marquee) -->
+  <rect x="0" y="${marqueeY}" width="${W}" height="${marqueeH}" fill="#0a0a0a" />
   ${
-    serviceStrip
-      ? `<text x="60" y="${stripY}" font-family="JetBrains Mono, ui-monospace, monospace" font-size="16" fill="#0a0a0a" opacity="0.7" letter-spacing="1.5">${esc(serviceStrip)}</text>`
+    marqueeSpans
+      ? `<text x="60" y="${marqueeY + 35}" font-family="JetBrains Mono, ui-monospace, monospace" font-size="14" letter-spacing="3" fill="#f1ead9">${marqueeSpans}</text>`
       : ""
   }
-
-  <!-- corner mark -->
-  <circle cx="${W - 80}" cy="${stripY - 6}" r="6" fill="#0a0a0a" />
 </svg>`;
 }

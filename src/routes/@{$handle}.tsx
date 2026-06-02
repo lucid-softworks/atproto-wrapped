@@ -57,12 +57,7 @@ function HandlePage() {
   }, [query.data]);
 
   if (query.data) {
-    return (
-      <Wrapped
-        stats={query.data}
-        onReset={() => navigate({ to: "/" })}
-      />
-    );
+    return <Wrapped stats={query.data} />;
   }
 
   return (
