@@ -1,6 +1,20 @@
-import type { PopfeedHighlights } from "../../lib/featured";
+import type {
+  PopfeedHighlights,
+  PopfeedReview,
+} from "../../lib/featured";
 import { Cover } from "../Cover";
 import { initial } from "../../lib/format";
+import { FeaturedRow } from "./_shared";
+
+// Each creative-work type maps to its own group with a verb that actually
+// fits ("watched" makes no sense for a video game). Order here = render order.
+const TYPE_GROUPS: Array<{ type: string; label: string }> = [
+  { type: "movie", label: "Movies you watched" },
+  { type: "tv_show", label: "Shows you watched" },
+  { type: "video_game", label: "Games you played" },
+  { type: "book", label: "Books you read" },
+  { type: "music_album", label: "Albums you heard" },
+];
 
 export function FeaturedPopfeedSection({
   data,
@@ -13,6 +27,19 @@ export function FeaturedPopfeedSection({
     .sort((a, b) => b[1] - a[1])
     .map(([t, n]) => `${n.toLocaleString()} ${prettyPopfeedType(t, n)}`)
     .join("  ·  ");
+
+  const grouped = new Map<string, PopfeedReview[]>();
+  const other: PopfeedReview[] = [];
+  for (const r of data.reviews) {
+    const known = TYPE_GROUPS.some((g) => g.type === r.type);
+    if (known && r.type) {
+      const arr = grouped.get(r.type) ?? [];
+      arr.push(r);
+      grouped.set(r.type, arr);
+    } else {
+      other.push(r);
+    }
+  }
 
   return (
     <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-yellow text-ink">
@@ -30,7 +57,7 @@ export function FeaturedPopfeedSection({
         </div>
 
         <h2 className="mt-6 text-[clamp(2.5rem,7vw,5rem)] leading-[0.9] font-bold tracking-[-0.03em]">
-          Your <span className="font-serif italic">watchlist</span>.
+          A year of <span className="font-serif italic">reviews</span>.
         </h2>
 
         {typesSummary && (
@@ -39,11 +66,31 @@ export function FeaturedPopfeedSection({
           </p>
         )}
 
-        <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {data.reviews.map((r, i) => (
-            <ReviewCard key={`${r.title}-${i}`} review={r} did={did} />
-          ))}
-        </div>
+        {TYPE_GROUPS.map(({ type, label }) => {
+          const list = grouped.get(type);
+          if (!list || list.length === 0) return null;
+          return (
+            <div key={type} className="mt-12">
+              <FeaturedRow label={`${label} · ${list.length}`} />
+              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                {list.map((r, i) => (
+                  <ReviewCard key={`${r.rkey}-${i}`} review={r} did={did} />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+
+        {other.length > 0 && (
+          <div className="mt-12">
+            <FeaturedRow label={`Other reviews · ${other.length}`} />
+            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {other.map((r, i) => (
+                <ReviewCard key={`${r.rkey}-${i}`} review={r} did={did} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -53,7 +100,7 @@ function ReviewCard({
   review,
   did,
 }: {
-  review: PopfeedHighlights["reviews"][number];
+  review: PopfeedReview;
   did: string;
 }) {
   const href = `https://popfeed.social/review/at:/${did}/social.popfeed.feed.review/${review.rkey}`;
