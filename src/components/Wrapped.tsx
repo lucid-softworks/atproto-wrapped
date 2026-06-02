@@ -322,18 +322,31 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
     }))
     .sort((a, b) => b.count - a.count);
 
-  // Greedy de-clumping: if two adjacent sections share a theme color, swap
-  // the second one with the next item that has a different theme. Keeps
-  // activity order mostly intact while breaking up monochrome runs.
-  for (let i = 1; i < features.length; i++) {
-    if (features[i].theme !== features[i - 1].theme) continue;
-    for (let j = i + 1; j < features.length; j++) {
-      if (features[j].theme !== features[i - 1].theme) {
-        [features[i], features[j]] = [features[j], features[i]];
-        break;
+  // De-clumping: rebuild the order so no two adjacent sections share a
+  // theme color when avoidable. We walk through the activity-sorted list
+  // and at each step pick the first remaining item whose theme differs
+  // from the last placed item — biasing toward the original priority
+  // while breaking up monochrome runs. If only same-theme items are left
+  // we accept the adjacency rather than tank the order entirely.
+  const sorted = features;
+  const remaining = sorted.slice();
+  const placed: Feature[] = [];
+  while (remaining.length > 0) {
+    const last = placed[placed.length - 1];
+    let pickIdx = -1;
+    if (last) {
+      for (let i = 0; i < remaining.length; i++) {
+        if (remaining[i].theme !== last.theme) {
+          pickIdx = i;
+          break;
+        }
       }
     }
+    if (pickIdx === -1) pickIdx = 0;
+    placed.push(remaining[pickIdx]);
+    remaining.splice(pickIdx, 1);
   }
+  const ordered = placed;
 
   async function onShare() {
     return shareWrappedUrl(stats.handle);
@@ -343,7 +356,7 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
     <div className="min-h-svh bg-cream text-ink">
       <StickyNav handle={stats.handle} onShare={onShare} />
       <IntroSlide stats={stats} topServices={topServices} onShare={onShare} />
-      {features.map((f) => (
+      {ordered.map((f) => (
         <Fragment key={f.key}>{f.node}</Fragment>
       ))}
       {tail.length > 0 && <TailSection items={tail} />}
