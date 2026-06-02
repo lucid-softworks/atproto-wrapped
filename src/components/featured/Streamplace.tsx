@@ -1,6 +1,6 @@
 import type { StreamplaceHighlights } from "../../lib/featured";
 import { FeaturedRow } from "./_shared";
-import { relativeDate } from "../../lib/format";
+import { compactNumber, relativeDate } from "../../lib/format";
 import { sectionTheme, type SectionTheme } from "./_theme";
 
 export function FeaturedStreamplaceSection({
@@ -12,24 +12,21 @@ export function FeaturedStreamplaceSection({
 }) {
   const t = sectionTheme(theme ?? "cyan");
   const stats: Array<[string, string]> = [
-    ["Streams", `${data.totalStreams.toLocaleString()}`],
-    ["Chat messages", `${data.totalChats.toLocaleString()}`],
-    [
-      "Streamers chatted with",
-      `${data.uniqueStreamersChatted.toLocaleString()}`,
-    ],
+    ["Streams", compactNumber(data.totalStreams)],
+    ["Chat messages", compactNumber(data.totalChats)],
+    ["Streamers chatted with", compactNumber(data.uniqueStreamersChatted)],
   ];
   return (
     <section className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}>
       <div className="grain absolute inset-0" />
-      <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
+      <div className="relative mx-auto max-w-7xl px-5 py-16 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">
           <div className="font-mono text-xs tracking-widest uppercase opacity-70">
             Spotlight · Streamplace
           </div>
         </div>
 
-        <h2 className="mt-6 text-[clamp(2.5rem,7vw,5rem)] leading-[0.9] font-bold tracking-[-0.03em]">
+        <h2 className="mt-6 text-[clamp(2.25rem,7vw,5rem)] leading-[0.95] font-bold tracking-[-0.03em] break-words">
           On <span className="font-serif italic">stream</span>.
         </h2>
 
@@ -37,12 +34,14 @@ export function FeaturedStreamplaceSection({
           {stats.map(([k, v]) => (
             <div
               key={k}
-              className="rounded-2xl border-2 border-ink bg-cream p-5"
+              className="rounded-2xl border-2 border-ink bg-cream p-4 sm:p-5"
             >
               <div className="font-mono text-[10px] tracking-widest text-ink/55 uppercase">
                 {k}
               </div>
-              <div className="mt-2 text-4xl font-bold tabular-nums">{v}</div>
+              <div className="mt-2 text-3xl font-bold tabular-nums sm:text-4xl">
+                {v}
+              </div>
             </div>
           ))}
         </div>
@@ -54,10 +53,12 @@ export function FeaturedStreamplaceSection({
               {data.streams.map((s, i) => (
                 <li
                   key={`${s.title}-${i}`}
-                  className="flex items-center justify-between gap-4 rounded-xl border-2 border-ink bg-cream p-3"
+                  className="flex items-center justify-between gap-3 rounded-xl border-2 border-ink bg-cream p-3"
                 >
-                  <div className="min-w-0">
-                    <div className="truncate font-semibold">{s.title}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="line-clamp-2 font-semibold leading-tight">
+                      {s.title}
+                    </div>
                     {s.createdAt && (
                       <div className="font-mono text-[11px] opacity-60">
                         {s.createdAt.toLocaleDateString(undefined, {

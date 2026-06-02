@@ -1,5 +1,6 @@
 import type { RankthatHighlights } from "../../lib/highlights/rankthat";
 import { FeaturedRow } from "./_shared";
+import { compactNumber } from "../../lib/format";
 import { sectionTheme, type SectionTheme } from "./_theme";
 
 export function FeaturedRankthatSection({
@@ -13,36 +14,36 @@ export function FeaturedRankthatSection({
   return (
     <section className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}>
       <div className="grain absolute inset-0" />
-      <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
-        <div className="flex items-center justify-between">
+      <div className="relative mx-auto max-w-7xl px-5 py-16 sm:px-10 sm:py-24">
+        <div className="flex items-center justify-between gap-3">
           <div className="font-mono text-xs tracking-widest uppercase opacity-70">
             Spotlight · Rankthat
           </div>
-          <span className="rounded-full bg-ink px-3 py-1 font-mono text-xs tracking-widest text-wrap-orange uppercase">
-            {data.totalItems.toLocaleString()}{" "}
+          <span className="shrink-0 rounded-full bg-ink px-3 py-1 font-mono text-xs tracking-widest text-wrap-orange uppercase">
+            {compactNumber(data.totalItems)}{" "}
             {data.totalItems === 1 ? "item" : "items"}
           </span>
         </div>
 
-        <h2 className="mt-6 text-[clamp(2.5rem,7vw,5rem)] leading-[0.9] font-bold tracking-[-0.03em]">
+        <h2 className="mt-6 text-[clamp(2.25rem,7vw,5rem)] leading-[0.95] font-bold tracking-[-0.03em] break-words">
           Your <span className="font-serif italic">rankings</span>.
         </h2>
 
         <div className="mt-8 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border-2 border-ink bg-cream p-5">
+          <div className="rounded-2xl border-2 border-ink bg-cream p-4 sm:p-5">
             <div className="font-mono text-[10px] tracking-widest text-ink/55 uppercase">
               Rankings
             </div>
-            <div className="mt-2 text-4xl font-bold tabular-nums">
-              {data.totalCollections.toLocaleString()}
+            <div className="mt-2 text-3xl font-bold tabular-nums sm:text-4xl">
+              {compactNumber(data.totalCollections)}
             </div>
           </div>
-          <div className="rounded-2xl border-2 border-ink bg-cream p-5">
+          <div className="rounded-2xl border-2 border-ink bg-cream p-4 sm:p-5">
             <div className="font-mono text-[10px] tracking-widest text-ink/55 uppercase">
               Items ranked
             </div>
-            <div className="mt-2 text-4xl font-bold tabular-nums">
-              {data.totalItems.toLocaleString()}
+            <div className="mt-2 text-3xl font-bold tabular-nums sm:text-4xl">
+              {compactNumber(data.totalItems)}
             </div>
           </div>
         </div>
@@ -56,8 +57,8 @@ export function FeaturedRankthatSection({
                   key={c.uri}
                   className="rounded-2xl border-2 border-ink bg-cream p-4"
                 >
-                  <div className="flex items-baseline justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-2">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
                       {c.color && (
                         <span
                           aria-hidden
@@ -65,7 +66,7 @@ export function FeaturedRankthatSection({
                           style={{ backgroundColor: c.color }}
                         />
                       )}
-                      <div className="line-clamp-1 font-semibold leading-tight">
+                      <div className="min-w-0 truncate font-semibold leading-tight">
                         {c.name}
                       </div>
                     </div>

@@ -65,14 +65,14 @@ export function FeaturedFrontpageSection({
       className={`relative overflow-hidden border-b-2 border-ink ${t.bg} ${t.text}`}
     >
       <div className="grain absolute inset-0" />
-      <div className="relative mx-auto max-w-7xl px-6 py-20 sm:px-10 sm:py-24">
+      <div className="relative mx-auto max-w-7xl px-5 py-16 sm:px-10 sm:py-24">
         <div className="flex items-center justify-between">
           <div className="font-mono text-xs tracking-widest uppercase opacity-70">
             Spotlight · Frontpage
           </div>
         </div>
 
-        <h2 className="mt-6 text-[clamp(2.5rem,7vw,5rem)] leading-[0.9] font-bold tracking-[-0.03em]">
+        <h2 className="mt-6 text-[clamp(2.25rem,7vw,5rem)] leading-[0.95] font-bold tracking-[-0.03em] break-words">
           On <span className="font-serif italic">Frontpage</span>.
         </h2>
 
@@ -105,7 +105,7 @@ export function FeaturedFrontpageSection({
                   key={`${p.title}-${i}`}
                   className="flex items-baseline justify-between gap-3 rounded-xl border-2 border-ink bg-cream p-3"
                 >
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="truncate font-semibold">
                       {p.title ?? p.url ?? "Submission"}
                     </div>
