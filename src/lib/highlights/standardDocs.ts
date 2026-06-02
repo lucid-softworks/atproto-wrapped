@@ -13,6 +13,9 @@ export type StandardDocsHighlights = {
   totalRecommends: number;
   uniqueTags: number;
   docs: StandardDoc[];
+  /** Up to 12 at:// URIs of documents this user has recommended (on other
+   *  people's repos). The UI fetches them cross-PDS for rich rendering. */
+  recommendedUris: string[];
 };
 
 function strOrNull(v: unknown): string | null {
@@ -60,10 +63,21 @@ export function getStandardDocsHighlights(
     return bd - ad;
   });
 
+  const recommendedUris: string[] = [];
+  for (const r of recommendRecords) {
+    const v = r.value;
+    const docUri = strOrNull((v as Record<string, unknown>).document);
+    if (docUri && docUri.startsWith("at://")) {
+      recommendedUris.push(docUri);
+      if (recommendedUris.length >= 12) break;
+    }
+  }
+
   return {
     totalDocs: docRecords.length,
     totalRecommends: recommendRecords.length,
     uniqueTags: tagSet.size,
     docs: docs.slice(0, 12),
+    recommendedUris,
   };
 }

@@ -66,6 +66,7 @@ import { getPollenHighlights } from "../lib/highlights/pollen";
 import { getAtmosHighlights } from "../lib/highlights/atmos";
 import { getAiConsentHighlights } from "../lib/highlights/aiConsent";
 import { getProtoimsgHighlights } from "../lib/highlights/protoimsg";
+import { getKeytraceHighlights } from "../lib/highlights/keytrace";
 import { StickyNav } from "./wrapped/Nav";
 import { IntroSlide } from "./wrapped/Intro";
 import { TailSection } from "./wrapped/Tail";
@@ -130,6 +131,7 @@ import { FeaturedPollenSection } from "./featured/Pollen";
 import { FeaturedAtmosSection } from "./featured/Atmos";
 import { FeaturedAiConsentSection } from "./featured/AiConsent";
 import { FeaturedProtoimsgSection } from "./featured/Protoimsg";
+import { FeaturedKeytraceSection } from "./featured/Keytrace";
 
 type Bucket = { nsid: string; count: number };
 
@@ -231,6 +233,7 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
   const atmos = getAtmosHighlights(stats.byCollection);
   const aiConsent = getAiConsentHighlights(stats.byCollection);
   const protoimsg = getProtoimsgHighlights(stats.byCollection);
+  const keytrace = getKeytraceHighlights(stats.byCollection);
 
   // Build the spotlight list — each entry is a featured section that only
   // appears when its highlight is non-null. We then sort by how many records
@@ -304,6 +307,7 @@ export function Wrapped({ stats }: { stats: RepoStats }) {
     { key: "atmos", show: !!atmos, prefixes: ["email.atmos."], node: atmos && <FeaturedAtmosSection data={atmos} /> },
     { key: "aiConsent", show: !!aiConsent, prefixes: ["community.lexicon.preference."], node: aiConsent && <FeaturedAiConsentSection data={aiConsent} /> },
     { key: "protoimsg", show: !!protoimsg, prefixes: ["app.protoimsg."], node: protoimsg && <FeaturedProtoimsgSection data={protoimsg} /> },
+    { key: "keytrace", show: !!keytrace, prefixes: ["dev.keytrace."], node: keytrace && <FeaturedKeytraceSection data={keytrace} /> },
   ];
   const features: Feature[] = candidates
     .filter((c) => c.show && c.node)

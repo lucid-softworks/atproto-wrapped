@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { CalendarHighlights } from "../../lib/highlights/calendar";
-import { fetchRecordByUri } from "../../lib/highlights/_atUri";
+import { fetchRecordByUri, parseAtUri } from "../../lib/highlights/_atUri";
+import { resolveHandlesForDids } from "../../lib/bskyProfiles";
 
 function formatDateTime(d: Date): string {
   return d.toLocaleString(undefined, {
@@ -42,14 +43,20 @@ function stripFragmentPrefix(value: string): string {
 
 /**
  * Build a Streamplace watch URL from an at:// URI pointing at a
- * place.stream.video record. We mirror popfeed's URL convention
- * (`/watch/at:/<did>/<collection>/<rkey>`) — if Streamplace uses a
- * different pattern this is the one knob to turn.
+ * place.stream.video record. Streamplace URLs use the creator's handle:
+ *   https://stream.place/<handle>/video/<rkey>
+ * If we haven't resolved the creator's handle yet, fall back to the DID
+ * (stream.place accepts both forms).
  */
-function vodWatchUrl(atUri: string): string | null {
-  if (!atUri.startsWith("at://")) return null;
-  const rest = atUri.slice("at://".length);
-  return `https://stream.place/watch/at:/${rest}`;
+function vodWatchUrl(
+  atUri: string,
+  handles: Map<string, string>,
+): string | null {
+  const parsed = parseAtUri(atUri);
+  if (!parsed) return null;
+  const handle = handles.get(parsed.did);
+  const actor = handle ?? parsed.did;
+  return `https://stream.place/${actor}/video/${parsed.rkey}`;
 }
 
 async function fetchEvents(uris: string[]): Promise<Map<string, RemoteEvent>> {
@@ -104,6 +111,28 @@ export function FeaturedCalendarSection({
     staleTime: 1000 * 60 * 60,
   });
   const remoteEvents = eventsQuery.data ?? new Map<string, RemoteEvent>();
+
+  // Collect every VOD creator DID we know about (both from hosted events
+  // and from the cross-PDS RSVP'd events) and resolve them to handles so
+  // we can build proper stream.place/<handle>/video/<rkey> URLs.
+  const vodDids = Array.from(
+    new Set(
+      [
+        ...data.events.map((e) => e.vodAtUri),
+        ...Array.from(remoteEvents.values()).map((e) => e.vodAtUri),
+      ]
+        .filter((u): u is string => !!u)
+        .map((u) => parseAtUri(u)?.did)
+        .filter((d): d is string => !!d),
+    ),
+  );
+  const vodHandlesQuery = useQuery({
+    queryKey: ["calendar-vod-handles", vodDids],
+    queryFn: () => resolveHandlesForDids(vodDids),
+    enabled: vodDids.length > 0,
+    staleTime: 1000 * 60 * 60,
+  });
+  const vodHandles = vodHandlesQuery.data ?? new Map<string, string>();
 
   return (
     <section className="relative overflow-hidden border-b-2 border-ink bg-wrap-violet text-cream">
@@ -215,7 +244,7 @@ export function FeaturedCalendarSection({
                       ))}
                       {e.vodAtUri &&
                         (() => {
-                          const watchUrl = vodWatchUrl(e.vodAtUri);
+                          const watchUrl = vodWatchUrl(e.vodAtUri, vodHandles);
                           if (!watchUrl) return null;
                           return (
                             <a
@@ -281,7 +310,7 @@ export function FeaturedCalendarSection({
                     </div>
                     {ev?.vodAtUri &&
                       (() => {
-                        const watchUrl = vodWatchUrl(ev.vodAtUri);
+                        const watchUrl = vodWatchUrl(ev.vodAtUri, vodHandles);
                         if (!watchUrl) return null;
                         return (
                           <a

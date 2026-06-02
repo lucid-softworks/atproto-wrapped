@@ -125,6 +125,8 @@ export const FEATURED_NSID_PREFIXES: string[] = [
   "community.lexicon.preference.",
   // protoimsg chat / community
   "app.protoimsg.",
+  // keytrace identity claims (orcid, tangled, etc.)
+  "dev.keytrace.",
 ];
 
 /**
@@ -2082,8 +2084,9 @@ export function getSmokeSignalHighlights(
     byCollection.get("events.smokesignal.calendar.rsvp") ?? [];
   const profiles =
     byCollection.get("events.smokesignal.app.profile") ?? [];
-  if (events.length === 0 && rsvps.length === 0 && profiles.length === 0)
-    return null;
+  // A profile by itself is just "I created an account" — don't render the
+  // section unless there's actual activity (an event or an RSVP).
+  if (events.length === 0 && rsvps.length === 0) return null;
 
   const rsvpsByStatus = new Map<string, number>();
   const parsedRsvps: SmokeSignalRsvp[] = rsvps.map((r) => {
