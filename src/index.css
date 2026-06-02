@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI",
+    Roboto, sans-serif;
+  --font-serif: "Instrument Serif", "Iowan Old Style", "Apple Garamond",
+    Baskerville, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas,
+    monospace;
+
+  --color-cream: #f1ead9;
+  --color-cream-dark: #e7dfc9;
+  --color-ink: #0a0a0a;
+
+  --color-wrap-pink: #ff4d97;
+  --color-wrap-violet: #6b3cff;
+  --color-wrap-lime: #d8ff4d;
+  --color-wrap-orange: #ff6a3d;
+  --color-wrap-cyan: #4dd4ff;
+  --color-wrap-yellow: #ffd84d;
+  --color-wrap-mint: #7df0b0;
+  --color-wrap-red: #ff3d3d;
+  --color-wrap-cobalt: #1e4dff;
+}
+
+html,
+body,
+#root {
+  min-height: 100svh;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "ss02";
+  -webkit-font-smoothing: antialiased;
+  background: var(--color-cream);
+  color: var(--color-ink);
+}
+
+/* Subtle grain texture for cream sections — tiny embedded SVG noise */
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee 40s linear infinite;
+}
+
+@keyframes blob {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -40px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 30px) scale(0.95);
+  }
+}
+
+.blob {
+  animation: blob 14s ease-in-out infinite;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes sprite-walk-3 {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: var(--sprite-walk-x);
+  }
+}
+
+.sprite-walk-3 {
+  animation: sprite-walk-3 600ms steps(3) infinite;
+}
