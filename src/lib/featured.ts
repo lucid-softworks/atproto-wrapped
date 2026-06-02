@@ -71,6 +71,40 @@ export const FEATURED_NSID_PREFIXES: string[] = [
   "id.sifa.",
   // hypha spores
   "coop.hypha.spores.",
+  // — second-wave services (highlights/*) —
+  // social graph
+  "com.atprotofans.high-five.",
+  "dev.atvouch.",
+  "xyz.atpoke.",
+  // narrative
+  "tech.tokimeki.takibi.",
+  "stream.thought.",
+  "fyi.asq.",
+  "com.skybemoreblue.",
+  // visual
+  "boo.sky.",
+  "blue.badge.",
+  "blue.registry.",
+  "uk.madebydanny.",
+  "dev.flo-bit.",
+  "app.sonasky.",
+  "org.simocracy.",
+  // lists / productivity / groups
+  "app.attodo.",
+  "dev.skyboard.",
+  "network.cosmik.",
+  "dev.jakestout.atguilds.",
+  "lol.linkring.",
+  "net.asadaame5121.at-circle.",
+  "net.rankthat.",
+  // long-form / specials
+  "app.sidetrail.",
+  "blue.skytalk.",
+  "tech.tokimeki.poll.",
+  "site.standard.",
+  "place.wisp.",
+  "com.vibe-coded.",
+  "fyi.atstore.",
 ];
 
 /**
