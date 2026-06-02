@@ -1537,6 +1537,12 @@ export type FrontpageHighlights = {
   comments: number;
   votes: number;
   recent: Array<{ title?: string; url?: string; createdAt: Date | null }>;
+  recentVotes: Array<{ subjectUri?: string; createdAt: Date | null }>;
+  recentComments: Array<{
+    content?: string;
+    postUri?: string;
+    createdAt: Date | null;
+  }>;
 };
 
 export function getFrontpageHighlights(
@@ -1563,11 +1569,46 @@ export function getFrontpageHighlights(
     )
     .slice(0, 6);
 
+  const recentVotes = votes
+    .map((r) => {
+      const v = r.value;
+      const subject = v.subject as Record<string, unknown> | undefined;
+      return {
+        subjectUri: strOrUndef(subject?.uri),
+        createdAt: r.createdAt,
+      };
+    })
+    .filter((v) => !!v.subjectUri)
+    .sort(
+      (a, b) =>
+        (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0),
+    )
+    .slice(0, 8);
+
+  const recentComments = comments
+    .map((r) => {
+      const v = r.value;
+      const post = v.post as Record<string, unknown> | undefined;
+      return {
+        content: strOrUndef(v.content),
+        postUri: strOrUndef(post?.uri),
+        createdAt: r.createdAt,
+      };
+    })
+    .filter((c) => !!c.content || !!c.postUri)
+    .sort(
+      (a, b) =>
+        (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0),
+    )
+    .slice(0, 6);
+
   return {
     posts: posts.length,
     comments: comments.length,
     votes: votes.length,
     recent,
+    recentVotes,
+    recentComments,
   };
 }
 
